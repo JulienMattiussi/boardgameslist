@@ -1,5 +1,4 @@
 import { GetStaticProps } from "next";
-import Link from "next/link";
 
 import Layout from "../components/Layout";
 import BasicMeta from "../components/meta/BasicMeta";
