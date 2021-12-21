@@ -34,8 +34,8 @@ export default function Index({ posts, tags, pagination }: Props) {
       <div className="container">
         <div>
           <header>
-            <h1>La Marmezette</h1>
-            <span className="handle">Par Karen</span>
+            <h1>Jeux de plateau</h1>
+            <span className="handle">Par Aurel</span>
           </header>
           <section>
             <h2>Dernières Nouvelles</h2>
