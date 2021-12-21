@@ -36,7 +36,7 @@ export default function Index({ posts, tags, pagination }: Props) {
             <span className="handle">Par Aurel</span>
           </header>
           <section>
-            <h2>Dernières Nouvelles</h2>
+            <h2>Derniers ajouts</h2>
             <PostList posts={posts} tags={tags} pagination={pagination} />
           </section>
         </div>

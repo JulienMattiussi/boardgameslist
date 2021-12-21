@@ -37,7 +37,7 @@ export default function Index({ posts, tags, pagination }: Props) {
             <span className="handle">Par Aurel</span>
           </header>
           <section>
-            <h2>Dernières Nouvelles</h2>
+            <h2>Derniers ajouts</h2>
             <PostList posts={posts} tags={tags} pagination={pagination} />
           </section>
         </div>
@@ -98,30 +98,30 @@ export default function Index({ posts, tags, pagination }: Props) {
 }
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-    const page = parseInt(params.page as string);
-    const posts = listPostContent(page, config.posts_per_page);
-    const tags = listTags();
-    const pagination = {
-      current: page,
-      pages: Math.ceil(countPosts() / config.posts_per_page),
-    };
-    return {
-      props: {
-        page,
-        posts,
-        tags,
-        pagination,
-      },
-    };
+  const page = parseInt(params.page as string);
+  const posts = listPostContent(page, config.posts_per_page);
+  const tags = listTags();
+  const pagination = {
+    current: page,
+    pages: Math.ceil(countPosts() / config.posts_per_page),
   };
+  return {
+    props: {
+      page,
+      posts,
+      tags,
+      pagination,
+    },
+  };
+};
 
-  export const getStaticPaths: GetStaticPaths = async () => {
-    const pages = Math.ceil(countPosts() / config.posts_per_page);
-    const paths = Array.from(Array(pages - 1).keys()).map((it) => ({
-      params: { page: (it + 2).toString() },
-    }));
-    return {
-      paths: paths,
-      fallback: false,
-    };
+export const getStaticPaths: GetStaticPaths = async () => {
+  const pages = Math.ceil(countPosts() / config.posts_per_page);
+  const paths = Array.from(Array(pages - 1).keys()).map((it) => ({
+    params: { page: (it + 2).toString() },
+  }));
+  return {
+    paths: paths,
+    fallback: false,
   };
+};
