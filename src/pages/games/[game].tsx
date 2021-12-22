@@ -3,11 +3,11 @@ import renderToString from "next-mdx-remote/render-to-string";
 import { MdxRemote } from "next-mdx-remote/types";
 import hydrate from "next-mdx-remote/hydrate";
 import matter from "gray-matter";
-import { fetchPostContent } from "../../lib/posts";
+import { fetchGameContent } from "../../lib/games";
 import fs from "fs";
 import yaml from "js-yaml";
-import { parseISO } from 'date-fns';
-import PostLayout from "../../components/PostLayout";
+import { parseISO } from "date-fns";
+import GameLayout from "../../components/GameLayout";
 
 import InstagramEmbed from "react-instagram-embed";
 import YouTube from "react-youtube";
@@ -24,13 +24,13 @@ export type Props = {
 };
 
 const components = { InstagramEmbed, YouTube, TwitterTweetEmbed };
-const slugToPostContent = (postContents => {
-  let hash = {}
-  postContents.forEach(it => hash[it.slug] = it)
+const slugToGameContent = ((gameContents) => {
+  let hash = {};
+  gameContents.forEach((it) => (hash[it.slug] = it));
   return hash;
-})(fetchPostContent());
+})(fetchGameContent());
 
-export default function Post({
+export default function Game({
   title,
   dateString,
   slug,
@@ -39,9 +39,9 @@ export default function Post({
   description = "",
   source,
 }: Props) {
-  const content = hydrate(source, { components })
+  const content = hydrate(source, { components });
   return (
-    <PostLayout
+    <GameLayout
       title={title}
       date={parseISO(dateString)}
       slug={slug}
@@ -50,12 +50,12 @@ export default function Post({
       description={description}
     >
       {content}
-    </PostLayout>
-  )
+    </GameLayout>
+  );
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const paths = fetchPostContent().map(it => "/posts/" + it.slug);
+  const paths = fetchGameContent().map((it) => "/games/" + it.slug);
   return {
     paths,
     fallback: false,
@@ -63,10 +63,12 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const slug = params.post as string;
-  const source = fs.readFileSync(slugToPostContent[slug].fullPath, "utf8");
+  const slug = params.game as string;
+  const source = fs.readFileSync(slugToGameContent[slug].fullPath, "utf8");
   const { content, data } = matter(source, {
-    engines: { yaml: (s) => yaml.load(s, { schema: yaml.JSON_SCHEMA }) as object }
+    engines: {
+      yaml: (s) => yaml.load(s, { schema: yaml.JSON_SCHEMA }) as object,
+    },
   });
   const mdxSource = await renderToString(content, { components, scope: data });
   return {
@@ -77,8 +79,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       description: "",
       tags: data.tags,
       author: data.author,
-      source: mdxSource
+      source: mdxSource,
     },
   };
 };
-

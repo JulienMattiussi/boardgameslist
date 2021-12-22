@@ -1,18 +1,18 @@
-import { PostContent } from "../lib/posts";
+import { GameContent } from "../lib/games";
 import styles from "../../public/styles/content.module.css";
 import Date from "./Date";
 import Link from "next/link";
 import { parseISO } from "date-fns";
 
 type Props = {
-  post: PostContent;
+  game: GameContent;
 };
-export default function PostItem({ post }: Props) {
+export default function GameItem({ game }: Props) {
   return (
-    <Link href={"/posts/" + post.slug}>
+    <Link href={"/games/" + game.slug}>
       <a>
-        <Date date={parseISO(post.date)} />
-        <h2>{post.title}</h2>
+        <Date date={parseISO(game.date)} />
+        <h2>{game.title}</h2>
         <style jsx>
           {`
             a {
@@ -25,7 +25,7 @@ export default function PostItem({ post }: Props) {
             }
           `}
         </style>
-        <div className={styles.content}>{post.body}</div>
+        <div className={styles.content}>{game.body}</div>
       </a>
     </Link>
   );

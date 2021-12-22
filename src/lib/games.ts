@@ -3,9 +3,9 @@ import matter from "gray-matter";
 import path from "path";
 import yaml from "js-yaml";
 
-const postsDirectory = path.join(process.cwd(), "content/posts");
+const gamesDirectory = path.join(process.cwd(), "content/games");
 
-export type PostContent = {
+export type GameContent = {
   readonly date: string;
   readonly title: string;
   readonly slug: string;
@@ -14,22 +14,22 @@ export type PostContent = {
   readonly body?: string;
 };
 
-let postCache: PostContent[];
+let gameCache: GameContent[];
 
-export function fetchPostContent(): PostContent[] {
-  if (postCache) {
-    return postCache;
+export function fetchGameContent(): GameContent[] {
+  if (gameCache) {
+    return gameCache;
   }
-  // Get file names under /posts
-  const fileNames = fs.readdirSync(postsDirectory);
-  const allPostsData = fileNames
+  // Get file names under /games
+  const fileNames = fs.readdirSync(gamesDirectory);
+  const allGamesData = fileNames
     .filter((it) => it.endsWith(".mdx"))
     .map((fileName) => {
       // Read markdown file as string
-      const fullPath = path.join(postsDirectory, fileName);
+      const fullPath = path.join(gamesDirectory, fileName);
       const fileContents = fs.readFileSync(fullPath, "utf8");
 
-      // Use gray-matter to parse the post metadata section
+      // Use gray-matter to parse the game metadata section
       const matterResult = matter(fileContents, {
         engines: {
           yaml: (s) => yaml.load(s, { schema: yaml.JSON_SCHEMA }) as object,
@@ -40,8 +40,8 @@ export function fetchPostContent(): PostContent[] {
         title: string;
         tags: string[];
         slug: string;
-        fullPath: string,
-        body: string,
+        fullPath: string;
+        body: string;
       };
       matterData.fullPath = fullPath;
       matterData.body = matterResult.content;
@@ -57,29 +57,29 @@ export function fetchPostContent(): PostContent[] {
 
       return matterData;
     });
-  // Sort posts by date
-  postCache = allPostsData.sort((a, b) => {
+  // Sort games by date
+  gameCache = allGamesData.sort((a, b) => {
     if (a.date < b.date) {
       return 1;
     } else {
       return -1;
     }
   });
-  return postCache;
+  return gameCache;
 }
 
-export function countPosts(tag?: string): number {
-  return fetchPostContent().filter(
+export function countGames(tag?: string): number {
+  return fetchGameContent().filter(
     (it) => !tag || (it.tags && it.tags.includes(tag))
   ).length;
 }
 
-export function listPostContent(
+export function listGameContent(
   page: number,
   limit: number,
   tag?: string
-): PostContent[] {
-  return fetchPostContent()
+): GameContent[] {
+  return fetchGameContent()
     .filter((it) => !tag || (it.tags && it.tags.includes(tag)))
     .slice((page - 1) * limit, page * limit);
 }

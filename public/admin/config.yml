@@ -91,9 +91,9 @@ collections:
                 widget: "string"
                 hint: "Tag name for displaying on the site"
 
-  - name: "posts"
-    label: "Posts"
-    folder: "content/posts/"
+  - name: "games"
+    label: "Games"
+    folder: "content/games/"
     extension: "mdx"
     format: "frontmatter"
     create: true

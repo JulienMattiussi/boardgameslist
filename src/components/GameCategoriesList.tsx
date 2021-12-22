@@ -1,6 +1,6 @@
 import React from "react";
-import { PostContent } from "../lib/posts";
-import PostItem from "./PostItem";
+import { GameContent } from "../lib/games";
+import GameItem from "./GameItem";
 import TagLink from "./TagLink";
 import Pagination from "./Pagination";
 import { TagContent } from "../lib/tags";
@@ -9,7 +9,7 @@ type Props = {
   tags: TagContent[];
 };
 
-export function PostCategoriesList({ tags }: Props) {
+export function GameCategoriesList({ tags }: Props) {
   return (
     <>
       <ul className="categories">

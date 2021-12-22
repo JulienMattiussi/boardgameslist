@@ -1,12 +1,12 @@
 import React from "react";
-import { PostContent } from "../lib/posts";
-import PostItem from "./PostItem";
+import { GameContent } from "../lib/games";
+import GameItem from "./GameItem";
 import TagLink from "./TagLink";
 import Pagination from "./Pagination";
 import { TagContent } from "../lib/tags";
 
 type Props = {
-  posts: PostContent[];
+  games: GameContent[];
   tags: TagContent[];
   pagination: {
     current: number;
@@ -14,14 +14,14 @@ type Props = {
   };
 };
 
-export function PostList({ posts, tags, pagination }: Props) {
+export function GameList({ games, tags, pagination }: Props) {
   return (
     <div className={"container"}>
-      <div className={"posts"}>
-        <ul className={"post-list"}>
-          {posts.map((it, i) => (
+      <div className={"games"}>
+        <ul className={"game-list"}>
+          {games.map((it, i) => (
             <li key={i}>
-              <PostItem post={it} />
+              <GameItem game={it} />
             </li>
           ))}
         </ul>
@@ -45,15 +45,15 @@ export function PostList({ posts, tags, pagination }: Props) {
         li {
           list-style: none;
         }
-        .posts {
+        .games {
           display: flex;
           flex-direction: column;
           flex: 1 1 auto;
         }
-        .posts li {
+        .games li {
           margin-bottom: 1.5rem;
         }
-        .post-list {
+        .game-list {
           flex: 1 0 auto;
         }
       `}</style>

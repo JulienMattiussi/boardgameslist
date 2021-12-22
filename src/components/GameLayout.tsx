@@ -25,7 +25,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-export default function PostLayout({
+export default function GameLayout({
   title,
   date,
   slug,
@@ -39,23 +39,23 @@ export default function PostLayout({
   return (
     <Layout>
       <BasicMeta
-        url={`/posts/${slug}`}
+        url={`/games/${slug}`}
         title={title}
         keywords={keywords}
         description={description}
       />
       <TwitterCardMeta
-        url={`/posts/${slug}`}
+        url={`/games/${slug}`}
         title={title}
         description={description}
       />
       <OpenGraphMeta
-        url={`/posts/${slug}`}
+        url={`/games/${slug}`}
         title={title}
         description={description}
       />
       <JsonLdMeta
-        url={`/posts/${slug}`}
+        url={`/games/${slug}`}
         title={title}
         keywords={keywords}
         date={date}

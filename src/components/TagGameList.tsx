@@ -1,27 +1,27 @@
 import React from "react";
-import { PostContent } from "../lib/posts";
+import { GameContent } from "../lib/games";
 import { TagContent } from "../lib/tags";
-import PostItem from "./PostItem";
+import GameItem from "./GameItem";
 import Pagination from "./Pagination";
 
 type Props = {
-  posts: PostContent[];
+  games: GameContent[];
   tag: TagContent;
   pagination: {
     current: number;
     pages: number;
   };
 };
-export default function TagPostList({ posts, tag, pagination }: Props) {
+export default function TagGameList({ games, tag, pagination }: Props) {
   return (
     <div className={"container"}>
       <h1>
-        All posts / <span>{tag.name}</span>
+        All games / <span>{tag.name}</span>
       </h1>
       <ul>
-        {posts.map((it, i) => (
+        {games.map((it, i) => (
           <li key={i}>
-            <PostItem post={it} />
+            <GameItem game={it} />
           </li>
         ))}
       </ul>
@@ -29,11 +29,11 @@ export default function TagPostList({ posts, tag, pagination }: Props) {
         current={pagination.current}
         pages={pagination.pages}
         link={{
-          href: () => "/posts/tags/[[...slug]]",
+          href: () => "/games/tags/[[...slug]]",
           as: (page) =>
             page === 1
-              ? "/posts/tags/" + tag.slug
-              : `/posts/tags/${tag.slug}/${page}`,
+              ? "/games/tags/" + tag.slug
+              : `/games/tags/${tag.slug}/${page}`,
         }}
       />
       <style jsx>

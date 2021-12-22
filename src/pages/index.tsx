@@ -6,15 +6,15 @@ import OpenGraphMeta from "../components/meta/OpenGraphMeta";
 import TwitterCardMeta from "../components/meta/TwitterCardMeta";
 import { SocialList } from "../components/SocialList";
 import { ExternalLinks } from "../components/ExternalLinks";
-import { PostList } from "../components/PostList";
-import { PostCategoriesList } from "../components/PostCategoriesList";
+import { GameList } from "../components/GameList";
+import { GameCategoriesList } from "../components/GameCategoriesList";
 
 import config from "../lib/config";
-import { countPosts, listPostContent, PostContent } from "../lib/posts";
+import { countGames, listGameContent, GameContent } from "../lib/games";
 import { listTags, TagContent } from "../lib/tags";
 
 type Props = {
-  posts: PostContent[];
+  games: GameContent[];
   tags: TagContent[];
   pagination: {
     current: number;
@@ -22,7 +22,7 @@ type Props = {
   };
 };
 
-export default function Index({ posts, tags, pagination }: Props) {
+export default function Index({ games, tags, pagination }: Props) {
   const url = "/";
   return (
     <Layout>
@@ -37,7 +37,7 @@ export default function Index({ posts, tags, pagination }: Props) {
           </header>
           <section>
             <h2>Derniers ajouts</h2>
-            <PostList posts={posts} tags={tags} pagination={pagination} />
+            <GameList games={games} tags={tags} pagination={pagination} />
           </section>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default function Index({ posts, tags, pagination }: Props) {
         <h5>Liens utiles</h5>
         <ExternalLinks />
         <h5>Categories</h5>
-        <PostCategoriesList tags={tags} />
+        <GameCategoriesList tags={tags} />
         <h5>Réseaux "Sociaux"</h5>
         <SocialList />
       </div>
@@ -97,15 +97,15 @@ export default function Index({ posts, tags, pagination }: Props) {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const posts = listPostContent(1, config.posts_per_page);
+  const games = listGameContent(1, config.games_per_page);
   const tags = listTags();
   const pagination = {
     current: 1,
-    pages: Math.ceil(countPosts() / config.posts_per_page),
+    pages: Math.ceil(countGames() / config.games_per_page),
   };
   return {
     props: {
-      posts,
+      games,
       tags,
       pagination,
     },
