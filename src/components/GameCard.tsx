@@ -6,13 +6,39 @@ import styles from "./GameCard.module.css";
 type Props = {
   game: Game;
   onEdit?: (game: Game) => void;
+  detailed?: boolean;
 };
 
-export function GameCard({ game, onEdit }: Props) {
+export function GameCard({ game, onEdit, detailed }: Props) {
   const players = formatRange(game.joueursMin, game.joueursMax);
   const duration = formatRange(game.dureeMin, game.dureeMax);
-  const rating = ratingLevel(game.noteMoyenne);
   const hue = hueFromString(game.titre);
+  const perso = game.notePerso;
+  const moyenne = game.noteMoyenne;
+  const hasRating = perso !== null || moyenne !== null;
+  const ratingTooltip = [
+    perso !== null ? `Note perso : ${perso.toFixed(1)}` : null,
+    moyenne !== null ? `Note moyenne : ${moyenne.toFixed(1)}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const details: { label: string; value: string }[] = [];
+  if (game.edition !== null) {
+    details.push({ label: "Edition", value: String(game.edition) });
+  }
+  if (game.themes.length > 0) {
+    details.push({ label: "Themes", value: game.themes.join(", ") });
+  }
+  if (game.mecanismes.length > 0) {
+    details.push({ label: "Mecanismes", value: game.mecanismes.join(", ") });
+  }
+  if (game.emplacement) {
+    details.push({ label: "Emplacement", value: game.emplacement });
+  }
+  if (game.dateAcquisition) {
+    details.push({ label: "Acquis le", value: game.dateAcquisition });
+  }
 
   return (
     <article
@@ -31,10 +57,26 @@ export function GameCard({ game, onEdit }: Props) {
             <EditIcon />
           </button>
         )}
-        {rating && game.noteMoyenne !== null && (
-          <span className={`${styles.rating} ${styles[rating]}`}>
+        {hasRating && (
+          <span className={styles.rating} title={ratingTooltip}>
             <StarIcon className={styles.star} />
-            {game.noteMoyenne.toFixed(1)}
+            {perso !== null && (
+              <span
+                className={`${styles.rateValue} ${styles[ratingLevel(perso) ?? "mid"]}`}
+              >
+                {perso.toFixed(1)}
+              </span>
+            )}
+            {perso !== null && moyenne !== null && (
+              <span className={styles.rateSep} aria-hidden />
+            )}
+            {moyenne !== null && (
+              <span
+                className={`${styles.rateValue} ${styles[ratingLevel(moyenne) ?? "mid"]}`}
+              >
+                {moyenne.toFixed(1)}
+              </span>
+            )}
           </span>
         )}
         <div className={styles.bannerText}>
@@ -82,6 +124,17 @@ export function GameCard({ game, onEdit }: Props) {
               </li>
             ))}
           </ul>
+        )}
+
+        {detailed && details.length > 0 && (
+          <dl className={styles.details}>
+            {details.map((detail) => (
+              <div key={detail.label} className={styles.detailRow}>
+                <dt className={styles.detailLabel}>{detail.label}</dt>
+                <dd className={styles.detailValue}>{detail.value}</dd>
+              </div>
+            ))}
+          </dl>
         )}
 
         {(game.editeur.length > 0 || game.auteurs.length > 0) && (

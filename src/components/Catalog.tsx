@@ -32,7 +32,8 @@ const DURATION_OPTIONS = [
 
 const SORT_LABELS: Record<SortKey, string> = {
   titre: "Titre (A-Z)",
-  note: "Meilleures notes",
+  notePerso: "Meilleure note perso",
+  noteMoyenne: "Meilleure note moyenne",
   duree: "Duree croissante",
   age: "Age minimum",
 };
@@ -55,6 +56,7 @@ export function Catalog({ games }: Props) {
   const [sort, setSort] = useState<SortKey>("titre");
   const [editGame, setEditGame] = useState<Game | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [detailed, setDetailed] = useState(false);
 
   const openCreate = () => {
     setEditGame(null);
@@ -200,9 +202,19 @@ export function Catalog({ games }: Props) {
       </div>
 
       <div className={styles.actions}>
-        <p className={styles.count}>
-          {visible.length} {visible.length > 1 ? "jeux" : "jeu"}
-        </p>
+        <div className={styles.actionsLeft}>
+          <button
+            type="button"
+            className={detailed ? styles.chipActive : styles.chip}
+            onClick={() => setDetailed((value) => !value)}
+            aria-pressed={detailed}
+          >
+            {detailed ? "Moins d'infos" : "Plus d'infos"}
+          </button>
+          <p className={styles.count}>
+            {visible.length} {visible.length > 1 ? "jeux" : "jeu"}
+          </p>
+        </div>
         <div className={styles.actionButtons}>
           {canEdit && (
             <button
@@ -228,7 +240,11 @@ export function Catalog({ games }: Props) {
       </div>
 
       <div className={styles.screenList}>
-        <GameList games={visible} onEdit={canEdit ? openEdit : undefined} />
+        <GameList
+          games={visible}
+          onEdit={canEdit ? openEdit : undefined}
+          detailed={detailed}
+        />
       </div>
 
       <PrintList games={visible} summary={summary} />

@@ -96,12 +96,13 @@ test("filterGames combines query, player, duration and kind filters", () => {
 
 test("sortGames orders by title, rating, then duration without mutating input", () => {
   const games = [
-    makeGame({ titre: "Zeus", noteMoyenne: 6, dureeMax: 90 }),
-    makeGame({ titre: "Alpha", noteMoyenne: 8, dureeMax: 30 }),
-    makeGame({ titre: "Mid", noteMoyenne: null, dureeMax: null }),
+    makeGame({ titre: "Zeus", noteMoyenne: 6, notePerso: 9, dureeMax: 90 }),
+    makeGame({ titre: "Alpha", noteMoyenne: 8, notePerso: 5, dureeMax: 30 }),
+    makeGame({ titre: "Mid", noteMoyenne: null, notePerso: null, dureeMax: null }),
   ];
   expect(sortGames(games, "titre").map((g) => g.titre)).toEqual(["Alpha", "Mid", "Zeus"]);
-  expect(sortGames(games, "note").map((g) => g.titre)).toEqual(["Alpha", "Zeus", "Mid"]);
+  expect(sortGames(games, "noteMoyenne").map((g) => g.titre)).toEqual(["Alpha", "Zeus", "Mid"]);
+  expect(sortGames(games, "notePerso").map((g) => g.titre)).toEqual(["Zeus", "Alpha", "Mid"]);
   expect(sortGames(games, "duree").map((g) => g.titre)).toEqual(["Alpha", "Zeus", "Mid"]);
   expect(games[0].titre).toBe("Zeus");
 });

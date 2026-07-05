@@ -1,6 +1,11 @@
 import { Game } from "./games";
 
-export type SortKey = "titre" | "note" | "duree" | "age";
+export type SortKey =
+  | "titre"
+  | "notePerso"
+  | "noteMoyenne"
+  | "duree"
+  | "age";
 
 export type GameKind = "societe" | "enigme";
 
@@ -100,7 +105,9 @@ export function sortGames(games: Game[], key: SortKey): Game[] {
   switch (key) {
     case "titre":
       return sorted.sort((a, b) => a.titre.localeCompare(b.titre, "fr"));
-    case "note":
+    case "notePerso":
+      return sorted.sort((a, b) => (b.notePerso ?? -1) - (a.notePerso ?? -1));
+    case "noteMoyenne":
       return sorted.sort((a, b) => (b.noteMoyenne ?? -1) - (a.noteMoyenne ?? -1));
     case "duree":
       return sorted.sort(

@@ -89,12 +89,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.1rem;
-  height: 2.1rem;
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   color: var(--color-accent);
-  background: var(--color-accent-soft);
-  border-radius: 50%;
   cursor: default;
 }
 
@@ -129,6 +125,12 @@
   justify-content: space-between;
   gap: 1rem;
   margin: 1.5rem 0 1rem;
+}
+
+.actionsLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
 }
 
 .count {

@@ -35,8 +35,10 @@ Phase 0 terminée + **gros bond technique le 2026-07-05** :
 - **Affichage enrichi (magnifique)** :
   - `src/lib/filter.ts` : `filterGames` (recherche accent-insensible incluant la
     description + filtre nombre de joueurs + filtre durée par tranche + filtre type
-    société/énigme via `gameKind`), `sortGames` (titre / note / durée / âge mini).
-    Fonctions pures testées (25 tests).
+    société/énigme via `gameKind`), `sortGames` (titre / note perso / note moyenne /
+    durée / âge mini). Fonctions pures testées.
+    La pastille de note de `GameCard` affiche perso + moyenne (split + tooltip),
+    chaque valeur colorée par niveau.
   - `GameCard` affiche la description (clamp 3 lignes). Logo meeple + dé :
     `src/app/icon.svg` (favicon) + `Logo` dans `icons.tsx` (hero, centré sur le
     titre). Eyebrow "board game list", pas de sous-titre. Filtres joueurs/durée
