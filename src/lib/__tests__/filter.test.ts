@@ -20,7 +20,7 @@ function makeGame(overrides: Partial<Game>): Game {
     joueursMax: null,
     dureeMin: null,
     dureeMax: null,
-    age: "",
+    age: null,
     categories: [],
     themes: [],
     mecanismes: [],
@@ -183,10 +183,10 @@ test("sortGames orders by title, rating, then duration without mutating input", 
 
 test("sortGames orders by minimum age with unknown ages last", () => {
   const games = [
-    makeGame({ titre: "Douze", age: "12+" }),
-    makeGame({ titre: "Six", age: "6+" }),
-    makeGame({ titre: "Inconnu", age: "" }),
-    makeGame({ titre: "Huit", age: "8+" }),
+    makeGame({ titre: "Douze", age: 12 }),
+    makeGame({ titre: "Six", age: 6 }),
+    makeGame({ titre: "Inconnu", age: null }),
+    makeGame({ titre: "Huit", age: 8 }),
   ];
   expect(sortGames(games, "age").map((g) => g.titre)).toEqual([
     "Six",

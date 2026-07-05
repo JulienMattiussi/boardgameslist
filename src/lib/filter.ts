@@ -89,11 +89,6 @@ export function filterGames(games: Game[], filters: Filters): Game[] {
   );
 }
 
-function ageValue(age: string): number | null {
-  const match = age.match(/\d+/);
-  return match ? Number(match[0]) : null;
-}
-
 export function sortGames(games: Game[], key: SortKey): Game[] {
   const sorted = [...games];
   switch (key) {
@@ -114,8 +109,8 @@ export function sortGames(games: Game[], key: SortKey): Game[] {
     case "age":
       return sorted.sort(
         (a, b) =>
-          (ageValue(a.age) ?? Number.POSITIVE_INFINITY) -
-          (ageValue(b.age) ?? Number.POSITIVE_INFINITY),
+          (a.age ?? Number.POSITIVE_INFINITY) -
+          (b.age ?? Number.POSITIVE_INFINITY),
       );
   }
 }

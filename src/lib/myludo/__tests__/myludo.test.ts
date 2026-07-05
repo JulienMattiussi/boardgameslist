@@ -22,7 +22,7 @@ function makeGame(overrides: Partial<Game>): Game {
     joueursMax: null,
     dureeMin: null,
     dureeMax: null,
-    age: "",
+    age: null,
     categories: [],
     themes: [],
     mecanismes: [],
@@ -51,7 +51,7 @@ function makeImport(overrides: Partial<MyludoImport>): MyludoImport {
     joueursMax: null,
     dureeMin: null,
     dureeMax: null,
-    age: "",
+    age: null,
     categories: [],
     themes: [],
     mecanismes: [],
@@ -97,7 +97,7 @@ test("rawToImport normalizes a raw record whatever its origin format", () => {
   expect(imp.joueursMax).toBe(6);
   expect(imp.dureeMin).toBe(15);
   expect(imp.dureeMax).toBe(30);
-  expect(imp.age).toBe("8+");
+  expect(imp.age).toBe(8);
   expect(imp.categories).toEqual(["Jeu de Cartes"]);
   expect(imp.auteurs).toEqual(["Clément Gustave", "Tommy Paupe"]);
   expect(imp.notePerso).toBeNull();
@@ -204,19 +204,17 @@ test("findConflicts flags differing non-empty fields, fills empty ones silently"
   const existing = makeGame({
     myludoId: "1",
     titre: "Alpha",
-    age: "10+",
+    age: 10,
     editeur: [],
   });
   const incoming = makeImport({
     myludoId: "1",
     titre: "Alpha",
-    age: "12+",
+    age: 12,
     editeur: ["Iello"],
   });
   const conflicts = findConflicts(existing, incoming);
-  expect(conflicts).toEqual([
-    { field: "age", current: "10+", incoming: "12+" },
-  ]);
+  expect(conflicts).toEqual([{ field: "age", current: "10", incoming: "12" }]);
 });
 
 test("mergeFields fills empty cells, keeps conflicts unless replaced, attaches id", () => {
@@ -224,7 +222,7 @@ test("mergeFields fills empty cells, keeps conflicts unless replaced, attaches i
     rowIndex: 5,
     myludoId: "",
     titre: "Alpha",
-    age: "10+",
+    age: 10,
     editeur: [],
     image: "cover.png",
     description: "note perso",
@@ -232,11 +230,11 @@ test("mergeFields fills empty cells, keeps conflicts unless replaced, attaches i
   const incoming = makeImport({
     myludoId: "99",
     titre: "Alpha",
-    age: "12+",
+    age: 12,
     editeur: ["Iello"],
   });
   const kept = mergeFields(existing, incoming, []);
-  expect(kept.age).toBe("10+");
+  expect(kept.age).toBe(10);
   expect(kept.editeur).toEqual(["Iello"]);
   expect(kept.myludoId).toBe("99");
   expect(kept.source).toBe("myludo");
@@ -245,19 +243,19 @@ test("mergeFields fills empty cells, keeps conflicts unless replaced, attaches i
   expect(kept.description).toBe("note perso");
 
   const replaced = mergeFields(existing, incoming, ["age"]);
-  expect(replaced.age).toBe("12+");
+  expect(replaced.age).toBe(12);
 });
 
 test("compareGames flags only fields whose values differ", () => {
   const rows = compareGames(
-    makeGame({ titre: "Alpha", age: "10+", joueursMin: 2, joueursMax: 4 }),
-    makeImport({ titre: "Alpha", age: "12+", joueursMin: 2, joueursMax: 4 }),
+    makeGame({ titre: "Alpha", age: 10, joueursMin: 2, joueursMax: 4 }),
+    makeImport({ titre: "Alpha", age: 12, joueursMin: 2, joueursMax: 4 }),
   );
   const age = rows.find((row) => row.label === "Age");
   const players = rows.find((row) => row.label === "Joueurs");
   expect(age).toMatchObject({
-    existing: "10+",
-    incoming: "12+",
+    existing: "10",
+    incoming: "12",
     status: "conflict",
     keys: ["age"],
   });
@@ -271,14 +269,14 @@ test("isIdenticalDuplicate ignores existing-only values but not new or conflicti
   ).toBe(true);
   expect(
     isIdenticalDuplicate(
-      compareGames(base, makeImport({ titre: "Alpha", age: "10+" })),
+      compareGames(base, makeImport({ titre: "Alpha", age: 10 })),
     ),
   ).toBe(false);
   expect(
     isIdenticalDuplicate(
       compareGames(
-        makeGame({ titre: "Alpha", age: "10+" }),
-        makeImport({ titre: "Alpha", age: "12+" }),
+        makeGame({ titre: "Alpha", age: 10 }),
+        makeImport({ titre: "Alpha", age: 12 }),
       ),
     ),
   ).toBe(false);
@@ -323,7 +321,7 @@ test("parseMyludo tolerates unknown and missing columns (resilience)", () => {
   );
   expect(imports).toHaveLength(1);
   expect(imports[0].titre).toBe("Alpha");
-  expect(imports[0].age).toBe("10+");
+  expect(imports[0].age).toBe(10);
   expect(imports[0].dureeMin).toBeNull();
   expect(imports[0].categories).toEqual([]);
 });

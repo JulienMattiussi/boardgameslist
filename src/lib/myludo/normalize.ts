@@ -57,6 +57,11 @@ function parseIntOrNull(raw: string): number | null {
   return Number(trimmed);
 }
 
+function parseAge(raw: string): number | null {
+  const match = raw.trim().match(/\d+/);
+  return match ? Number(match[0]) : null;
+}
+
 function parseNote(raw: string): number | null {
   const value = Number(raw.trim());
   if (!Number.isFinite(value) || value === 0) {
@@ -78,7 +83,7 @@ export function rawToImport(raw: MyludoRaw): MyludoImport {
     joueursMax: joueurs.max,
     dureeMin: duree.min,
     dureeMax: duree.max,
-    age: asString(raw["Age(s)"]),
+    age: parseAge(asString(raw["Age(s)"])),
     categories: asList(raw["Catégorie(s)"]),
     themes: asList(raw["Thème(s)"]),
     mecanismes: asList(raw["Mécanisme(s)"]),

@@ -70,6 +70,39 @@
   min-width: 0;
 }
 
+.adorned {
+  display: flex;
+  align-items: center;
+  padding-right: 0.7rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.adorned:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.adorned input {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  color: var(--color-fg);
+  background: none;
+  border: none;
+}
+
+.adorned input:focus {
+  outline: none;
+}
+
+.adornment {
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
 .error {
   grid-column: 1 / -1;
   margin: 0;

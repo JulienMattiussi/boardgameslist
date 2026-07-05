@@ -97,7 +97,9 @@ export function GameCard({ game, onEdit, detailed }: Props) {
           {duration && (
             <MetaItem Icon={ClockIcon} value={duration} label="min" />
           )}
-          {game.age && <MetaItem Icon={AgeIcon} value={game.age} label="age" />}
+          {game.age !== null && (
+            <MetaItem Icon={AgeIcon} value={`${game.age}+`} label="age" />
+          )}
         </div>
 
         {game.description && (

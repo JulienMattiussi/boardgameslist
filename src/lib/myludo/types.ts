@@ -14,7 +14,7 @@ export type MyludoImport = {
   joueursMax: number | null;
   dureeMin: number | null;
   dureeMax: number | null;
-  age: string;
+  age: number | null;
   categories: string[];
   themes: string[];
   mecanismes: string[];

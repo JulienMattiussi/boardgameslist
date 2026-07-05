@@ -66,7 +66,7 @@ test("maps a full Myludo row to a typed Game", () => {
   expect(game.joueursMax).toBe(6);
   expect(game.dureeMin).toBe(15);
   expect(game.dureeMax).toBe(30);
-  expect(game.age).toBe("8+");
+  expect(game.age).toBe(8);
   expect(game.categories).toEqual(["Jeu de Cartes"]);
   expect(game.auteurs).toEqual(["Clément Gustave", "Tommy Paupe"]);
   expect(game.notePerso).toBeNull();

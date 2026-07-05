@@ -30,7 +30,10 @@
       "Bash(curl -s http://localhost:*)",
       "Bash(yarn test *)",
       "Bash(yarn prettier *)",
-      "Bash(make check *)"
+      "Bash(make check *)",
+      "Bash(yarn --cwd /home/julien/Documents/MyRepos/boardgameslist prettier --write \"src/**/*.{ts,tsx}\")",
+      "Bash(yarn --cwd /home/julien/Documents/MyRepos/boardgameslist tsc --noEmit)",
+      "Bash(make -C /home/julien/Documents/MyRepos/boardgameslist check)"
     ]
   },
   "hooks": {

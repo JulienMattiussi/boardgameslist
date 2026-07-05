@@ -10,7 +10,7 @@ export type Game = {
   joueursMax: number | null;
   dureeMin: number | null;
   dureeMax: number | null;
-  age: string;
+  age: number | null;
   categories: string[];
   themes: string[];
   mecanismes: string[];
@@ -46,7 +46,7 @@ const COLUMNS: ColumnSpec[] = [
   { header: "joueurs_max", key: "joueursMax", kind: "number" },
   { header: "duree_min", key: "dureeMin", kind: "number" },
   { header: "duree_max", key: "dureeMax", kind: "number" },
-  { header: "age", key: "age", kind: "string" },
+  { header: "age", key: "age", kind: "number" },
   { header: "categories", key: "categories", kind: "list" },
   { header: "themes", key: "themes", kind: "list" },
   { header: "mecanismes", key: "mecanismes", kind: "list" },
@@ -67,7 +67,11 @@ function parseNumber(raw: string): number | null {
     return null;
   }
   const value = Number(trimmed);
-  return Number.isFinite(value) ? value : null;
+  if (Number.isFinite(value)) {
+    return value;
+  }
+  const leading = trimmed.match(/-?\d+(?:\.\d+)?/);
+  return leading ? Number(leading[0]) : null;
 }
 
 function parseList(raw: string): string[] {

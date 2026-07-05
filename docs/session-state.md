@@ -100,8 +100,14 @@ Phase 0 terminée + **gros bond technique le 2026-07-05** :
   - **Champs non éditables** (read-only, grisés) : `source`, `note_moyenne` (vient de
     Myludo), `myludo_id`.
   - **Autocomplete** (`TagAutocomplete.tsx`, multi-valeurs `; `) sur `categories`,
-    `themes`, `editeur`, alimenté par `src/lib/taxonomies.ts` (listes CATEGORIES /
-    THEMES / EDITEURS générées depuis `collection.json`).
+    `themes`, `mecanismes`, `editeur`, alimenté par `src/lib/taxonomies.ts`
+    (CATEGORIES / THEMES / MECANISMES / EDITEURS régénérées depuis les exports
+    JSON+CSV : valeurs distinctes, casse Myludo conservée verbatim sauf
+    apostrophes des catégories normalisées en `d'`).
+  - **Age = entier** (`Game.age: number | null`, colonne Sheet en nombre) : le `+`
+    n'est plus stocké. Retiré à l'import (`parseAge` dans `normalize.ts`), affiché
+    comme adornment `+` dans le formulaire (champ number) et suffixé `N+` dans la
+    carte. `parseNumber` tolère un `+` résiduel (valeurs héritées `8+`).
   - **Layout compact** : joueurs à droite du titre, durée à droite du sous-titre ;
     demi-champs regroupés 2 par case pour gagner de la place (joueurs min/max,
     durée min/max, notes perso/moyenne, edition/age, date/myludo_id).

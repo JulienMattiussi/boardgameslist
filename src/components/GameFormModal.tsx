@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Game } from "@/lib/games";
-import { CATEGORIES, THEMES, EDITEURS } from "@/lib/taxonomies";
+import { CATEGORIES, THEMES, MECANISMES, EDITEURS } from "@/lib/taxonomies";
 import {
   CloseIcon,
   TrashIcon,
@@ -48,13 +48,6 @@ type FieldDef = {
 };
 
 const FIELDS: FieldDef[] = [
-  {
-    key: "mecanismes",
-    label: "Mecanismes",
-    type: "text",
-    Icon: GearIcon,
-    hint: "separes par ;",
-  },
   {
     key: "auteurs",
     label: "Auteur(s)",
@@ -116,7 +109,7 @@ function gameToForm(game: Game | null): FormState {
     joueursMax: num(game.joueursMax),
     dureeMin: num(game.dureeMin),
     dureeMax: num(game.dureeMax),
-    age: game.age,
+    age: num(game.age),
     categories: game.categories.join("; "),
     themes: game.themes.join("; "),
     mecanismes: game.mecanismes.join("; "),
@@ -271,7 +264,19 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
               {textInput("edition", "number")}
             </Field>
             <Field label="Age" Icon={AgeIcon} className={styles.duoItem}>
-              {textInput("age")}
+              <div className={styles.adorned}>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputMode="numeric"
+                  value={form.age}
+                  onChange={(event) =>
+                    set("age", event.target.value.replace(/[^\d]/g, ""))
+                  }
+                />
+                <span className={styles.adornment}>+</span>
+              </div>
             </Field>
           </div>
 
@@ -301,6 +306,15 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
               value={form.themes}
               onChange={(value) => set("themes", value)}
               options={THEMES}
+              inputClassName={controls.input}
+            />
+          </Field>
+
+          <Field label="Mecanismes" Icon={GearIcon} hint="separes par ;">
+            <TagAutocomplete
+              value={form.mecanismes}
+              onChange={(value) => set("mecanismes", value)}
+              options={MECANISMES}
               inputClassName={controls.input}
             />
           </Field>

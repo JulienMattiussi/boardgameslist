@@ -83,8 +83,8 @@ const FIELDS: {
   {
     label: "Age",
     keys: ["age"],
-    existing: (g) => g.age,
-    incoming: (i) => i.age,
+    existing: (g) => repr(g.age),
+    incoming: (i) => repr(i.age),
   },
   {
     label: "Categories",
