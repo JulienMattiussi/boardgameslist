@@ -8,6 +8,7 @@ import { filterGames, sortGames, SortKey, GameKind } from "@/lib/filter";
 import { GameList } from "./GameList";
 import { PrintList } from "./PrintList";
 import { GameFormModal } from "./GameFormModal";
+import { ImportModal } from "./ImportModal";
 import { Chip } from "./ui/Chip";
 import { IconButton } from "./ui/IconButton";
 import {
@@ -16,6 +17,7 @@ import {
   ClockIcon,
   PrinterIcon,
   PlusIcon,
+  UploadIcon,
 } from "./icons";
 import styles from "./Catalog.module.css";
 
@@ -58,6 +60,7 @@ export function Catalog({ games }: Props) {
   const [sort, setSort] = useState<SortKey>("titre");
   const [editGame, setEditGame] = useState<Game | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [detailed, setDetailed] = useState(false);
 
   const openCreate = () => {
@@ -220,6 +223,14 @@ export function Catalog({ games }: Props) {
               <PlusIcon />
             </IconButton>
           )}
+          {canEdit && (
+            <IconButton
+              label="Importer depuis Myludo"
+              onClick={() => setImportOpen(true)}
+            >
+              <UploadIcon />
+            </IconButton>
+          )}
           <IconButton label="Imprimer la liste" onClick={() => window.print()}>
             <PrinterIcon />
           </IconButton>
@@ -241,6 +252,17 @@ export function Catalog({ games }: Props) {
           game={editGame}
           onClose={() => setModalOpen(false)}
           onSaved={onSaved}
+        />
+      )}
+
+      {importOpen && (
+        <ImportModal
+          games={games}
+          onClose={() => setImportOpen(false)}
+          onImported={() => {
+            setImportOpen(false);
+            router.refresh();
+          }}
         />
       )}
     </section>

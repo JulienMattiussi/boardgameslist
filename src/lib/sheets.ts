@@ -51,7 +51,10 @@ export async function readSheetRows(): Promise<string[][]> {
   );
 }
 
-export async function appendGameRow(values: CellValue[]): Promise<void> {
+export async function appendGameRows(rows: CellValue[][]): Promise<void> {
+  if (rows.length === 0) {
+    return;
+  }
   const sheets = google.sheets({
     version: "v4",
     auth: getAuth([READWRITE_SCOPE]),
@@ -61,24 +64,41 @@ export async function appendGameRow(values: CellValue[]): Promise<void> {
     range: SHEET_NAME,
     valueInputOption: "RAW",
     insertDataOption: "INSERT_ROWS",
-    requestBody: { values: [values] },
+    requestBody: { values: rows },
   });
+}
+
+export async function updateGameRows(
+  updates: { rowIndex: number; values: CellValue[] }[],
+): Promise<void> {
+  if (updates.length === 0) {
+    return;
+  }
+  const sheets = google.sheets({
+    version: "v4",
+    auth: getAuth([READWRITE_SCOPE]),
+  });
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: getSpreadsheetId(),
+    requestBody: {
+      valueInputOption: "RAW",
+      data: updates.map(({ rowIndex, values }) => ({
+        range: `${SHEET_NAME}!A${rowIndex}:${LAST_COLUMN}${rowIndex}`,
+        values: [values],
+      })),
+    },
+  });
+}
+
+export async function appendGameRow(values: CellValue[]): Promise<void> {
+  await appendGameRows([values]);
 }
 
 export async function updateGameRow(
   rowIndex: number,
   values: CellValue[],
 ): Promise<void> {
-  const sheets = google.sheets({
-    version: "v4",
-    auth: getAuth([READWRITE_SCOPE]),
-  });
-  await sheets.spreadsheets.values.update({
-    spreadsheetId: getSpreadsheetId(),
-    range: `${SHEET_NAME}!A${rowIndex}:${LAST_COLUMN}${rowIndex}`,
-    valueInputOption: "RAW",
-    requestBody: { values: [values] },
-  });
+  await updateGameRows([{ rowIndex, values }]);
 }
 
 export async function deleteGameRow(rowIndex: number): Promise<void> {

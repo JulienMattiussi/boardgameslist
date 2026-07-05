@@ -119,7 +119,87 @@ Phase 0 terminée + **gros bond technique le 2026-07-05** :
   (fichiers/deps/exports inutilisés). Scripts + cibles Makefile : `make lint`,
   `make format`, `make knip`, `make test`, `make check` (tout). Tout au vert.
 
-**Prochaine étape** : Phase 5 (import Myludo). Voir section 8.
+- **Phase 5 (import Myludo) - cœur pur fait (2026-07-05)** dans `src/lib/myludo/` :
+  - **Contrainte d'archi respectée** : chaque format a son reader qui produit la MÊME
+    forme `MyludoRaw` (clés = colonnes Myludo, multi-valeurs en `string[]`) ; tout
+    l'aval (normalisation, dédoublonnage, future modale) est format-agnostique.
+  - `readers.ts` : `readJson`, `readCsv` (séparateur `;`, BOM + apostrophe garde-texte
+    Myludo `'ID` retirés en en-tête, multi-valeurs splitées sur `,`), `rowsToRaws`.
+  - `readXlsx.ts` : unzip via `fflate` + `parseSharedStrings`/`sheetToRows` (helpers
+    purs testés).
+  - `normalize.ts` : `parseRange` (`2 — 6`, `1+`, `(5)`, `Duo`->2, `X`->vide) +
+    `rawToImport` (colonnes FR -> `MyludoImport`).
+  - `dedup.ts` : `buildImportPlan` (cascade `myludo_id` -> `ean` -> titre normalisé ;
+    `findConflicts` : champ non vide différent = conflit, jamais d'écrasement
+    silencieux ; titre = correspondance probable à confirmer).
+  - Tests (8) + **validé sur les 3 vrais fichiers** (`~/Téléchargements/collection.*` :
+    json 32, csv 90, xlsx 32 ; readJson/readCsv/readXlsx normalisent à l'identique).
+  - `parse.ts` : `formatFromName` (extension) + `parseMyludo(format, bytes)` (dispatch
+    reader + normalize). `merge.ts` : `newFields` / `mergeFields` (remplit les cellules
+    vides, garde les conflits sauf ceux à remplacer, n'écrase jamais image/description).
+  - **Parsing + plan côté client** : les readers étant isomorphes (`fflate` marche
+    dans le navigateur), `ImportModal` parse le fichier au moment du choix (pré-analyse
+    instantanée : "Fichier valide : N jeux" / erreur) et construit l'`ImportPlan` via
+    `buildImportPlan(imports, games)` sans aller-retour. Seule l'écriture est serveur.
+    (La route preview `/api/import` a donc été retirée.)
+  - **Route** : `POST /api/import/apply` (écrit : `updateGameRows` + `appendGameRows`
+    groupés), gardée éditeur (401 vérifié). `sheets.ts` : écritures groupées ajoutées.
+  - **`ImportModal.tsx`** (client, ne voit que le plan) : choix fichier + pré-analyse
+    -> Analyser -> 3 rubriques -> Importer. Bouton "Importer depuis Myludo"
+    (éditeur) dans le `Catalog`. Rubriques :
+    1. **Nouveaux jeux** : cases cochées par défaut (décocher = ne pas ajouter).
+    2. **Doublons** : correspondance sûre (id/ean) strictement identique à l'export
+       (rien à arbitrer) ; affichés en liste avec case décochée + désactivée.
+       Aucune opération. Titre + catégorie affichés (comme les nouveaux jeux).
+    3. **Correspondances à valider** : probables (titre) + doublons sûrs avec au
+       moins un champ différent OU nouveau. **Assistant pas-à-pas** : une seule
+       comparaison affichée à la fois (compteur `n / total`). Deux vignettes
+       complètes (Actuel vs Import). Les champs vides côté Actuel sont complétés
+       automatiquement (valeur import en accent) ; chaque **conflit** (valeur des
+       deux côtés, différentes) est cliquable **champ par champ** (choisir Actuel
+       ou Import ; libellé du champ en rouge). Les 3 boutons radio en dessous sont
+       des **raccourcis** : "Garder l'actuel" / "Garder l'import" (tous les
+       conflits d'un côté) et "Garder les deux" (créer un jeu séparé). Bouton
+       **Suivant** à droite, grisé tant que la comparaison n'est pas résolue (tous
+       les conflits tranchés, ou "les deux"), plus un bouton **Précédent** (grisé
+       à la première étape ; présent aussi sur l'écran final pour réviser).
+       Message final quand tout est fait ; "Importer" reste grisé tant que
+       l'assistant n'est pas terminé.
+    - Chaque valeur de conflit reste cliquable (surlignée) ET un radio est affiché
+      à côté du libellé du champ (les deux font le même choix).
+    - Opérations : "Garder l'actuel" -> AUCUNE opération (jeu inchangé, non
+      compté) ; merge -> `mergeFields(existing, incoming, clésEnConflitPrises=import)`
+      (les vides sont remplis d'office) ; "les deux" -> `newFields` (nouvelle ligne).
+    - Compteurs : titre "Correspondances a valider (total / N restant)" ; le bouton
+      final indique "Importer N jeux" (grisé si N = 0).
+    - **EAN canonisé à la comparaison** : le JSON stocke l'EAN en nombre et perd
+      le zéro de tête (UPC-A 12 chiffres vs EAN-13), alors que XLSX/feuille l'ont
+      en texte `0...`. `compareGames` retire les zéros de tête (`canonEan`) avant
+      de comparer, donc le même code-barres n'est plus un faux conflit (JSON et
+      XLSX donnent le même résultat). Affichage inchangé (valeur brute). Testé.
+    - Comparaison pure et testée dans `compare.ts` (`compareGames` renvoie
+      `{label, keys, existing, incoming, status}` avec status
+      same/fill/conflict/existing-only ; `isIdenticalDuplicate` : un champ vide
+      côté import ne casse pas l'identité).
+    - Barre de boutons NON sticky : tout le dialog scrolle (en-tête collé), il faut
+      descendre jusqu'en bas pour valider.
+    - Modale élargie (max-width 920px) : "Nouveaux jeux" et "Doublons" affichés
+      côte à côte (`.lists` flex-wrap), l'assistant en pleine largeur en dessous.
+  - **Validation + résilience** : `parseMyludo` exige les 3 colonnes stables
+    `ID`, `EAN`, `Titre` (signature Myludo ; l'EAN est l'identifiant fiable lié au
+    jeu), erreur nommant les colonnes manquantes sinon ; volontairement souple pour
+    le reste : colonnes inconnues ignorées, colonnes manquantes -> valeur vide
+    (aucun plantage si Myludo ajoute/retire un autre champ). Testé.
+  - **Dates XLSX** : les cellules de type date sont stockées en numéro de série
+    (ex. `45928.41…`). `readXlsx` lit `xl/styles.xml` (`parseDateStyles`) pour
+    repérer les styles date (numFmt `DD/MM/YYYY`, ids intégrés 14-22/45-47) et
+    reconvertit le série en `YYYY-MM-DD`, alignant XLSX sur JSON/CSV. Sans ça,
+    `Date d'acquisition` remontait comme un nombre brut et créait un faux conflit
+    sur chaque correspondance. Testé.
+  - 47 tests verts, gating 401 OK. Reste à tester le flux réel connecté.
+
+**Prochaine étape** : test réel de l'import connecté, puis (tout à la fin) import des
+283 jeux du `.ods`. Voir section 8.
 
 ## 2. Décisions actées (ne pas re-débattre)
 

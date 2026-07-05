@@ -1,15 +1,8 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
-import { parseAllowlist, isEditor } from "@/lib/editors";
+import { isEditorRequest } from "@/lib/session";
 import { normalizeGame, gameToRow } from "@/lib/games";
 import { appendGameRow, updateGameRow, deleteGameRow } from "@/lib/sheets";
-
-async function isEditorRequest(): Promise<boolean> {
-  const session = await auth();
-  const allowlist = parseAllowlist(process.env.EDITORS_ALLOWLIST);
-  return isEditor(session?.user?.email, allowlist);
-}
 
 export async function POST(request: Request) {
   if (!(await isEditorRequest())) {
