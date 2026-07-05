@@ -8,21 +8,3 @@
   font-size: 0.85rem;
   color: var(--color-muted);
 }
-
-.button {
-  padding: 0.4rem 0.85rem;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.button:hover {
-  color: var(--color-accent-contrast);
-  background: var(--color-accent);
-}

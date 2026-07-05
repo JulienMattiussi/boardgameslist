@@ -25,9 +25,11 @@ import {
   StarIcon,
 } from "./icons";
 import { TagAutocomplete } from "./TagAutocomplete";
+import { Field, IconComponent } from "./ui/Field";
+import { Button } from "./ui/Button";
+import { IconButton } from "./ui/IconButton";
+import controls from "./ui/controls.module.css";
 import styles from "./GameFormModal.module.css";
-
-type IconComponent = (props: { className?: string }) => React.ReactElement;
 
 type Props = {
   game: Game | null;
@@ -42,21 +44,34 @@ type FieldDef = {
   label: string;
   type: "text" | "number" | "date";
   Icon: IconComponent;
-  step?: string;
   hint?: string;
 };
 
 const FIELDS: FieldDef[] = [
-  { key: "mecanismes", label: "Mecanismes", type: "text", Icon: GearIcon, hint: "separes par ;" },
-  { key: "auteurs", label: "Auteur(s)", type: "text", Icon: PersonIcon, hint: "separes par ;" },
+  {
+    key: "mecanismes",
+    label: "Mecanismes",
+    type: "text",
+    Icon: GearIcon,
+    hint: "separes par ;",
+  },
+  {
+    key: "auteurs",
+    label: "Auteur(s)",
+    type: "text",
+    Icon: PersonIcon,
+    hint: "separes par ;",
+  },
   { key: "emplacement", label: "Emplacement", type: "text", Icon: PinIcon },
   { key: "image", label: "Image (URL)", type: "text", Icon: ImageIcon },
-  { key: "ean", label: "EAN", type: "text", Icon: BarcodeIcon, hint: "separes par ;" },
+  {
+    key: "ean",
+    label: "EAN",
+    type: "text",
+    Icon: BarcodeIcon,
+    hint: "separes par ;",
+  },
 ];
-
-function num(value: number | null): string {
-  return value === null ? "" : String(value);
-}
 
 const EMPTY_FORM: FormState = {
   titre: "",
@@ -82,6 +97,10 @@ const EMPTY_FORM: FormState = {
   myludoId: "",
   description: "",
 };
+
+function num(value: number | null): string {
+  return value === null ? "" : String(value);
+}
 
 function gameToForm(game: Game | null): FormState {
   if (!game) {
@@ -119,24 +138,6 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
   const [error, setError] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  async function handleDelete() {
-    setDeleting(true);
-    setError("");
-    const res = await fetch("/api/games", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rowIndex: game?.rowIndex }),
-    });
-    setDeleting(false);
-    if (res.ok) {
-      onSaved();
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Erreur lors de la suppression.");
-      setConfirming(false);
-    }
-  }
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -177,6 +178,36 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
     }
   }
 
+  async function handleDelete() {
+    setDeleting(true);
+    setError("");
+    const res = await fetch("/api/games", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rowIndex: game?.rowIndex }),
+    });
+    setDeleting(false);
+    if (res.ok) {
+      onSaved();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "Erreur lors de la suppression.");
+      setConfirming(false);
+    }
+  }
+
+  const textInput = (
+    key: string,
+    type: "text" | "number" | "date" = "text",
+  ) => (
+    <input
+      className={controls.input}
+      type={type}
+      value={form[key]}
+      onChange={(event) => set(key, event.target.value)}
+    />
+  );
+
   return (
     <div className={styles.backdrop} onClick={onClose}>
       <div
@@ -190,281 +221,155 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
           <h2 className={styles.title}>
             {game ? "Modifier le jeu" : "Ajouter un jeu"}
           </h2>
-          <button
-            type="button"
-            className={styles.close}
-            onClick={onClose}
-            aria-label="Fermer"
-          >
+          <IconButton label="Fermer" variant="ghost" onClick={onClose}>
             <CloseIcon />
-          </button>
+          </IconButton>
         </header>
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          <label className={styles.field2}>
-            <span className={styles.label}>
-              <TagIcon className={styles.labelIcon} />
-              Titre *
-            </span>
+          <Field label="Titre *" Icon={TagIcon} className={styles.span2}>
             <input
-              className={styles.input}
+              className={controls.input}
               value={form.titre}
-              onChange={(e) => set("titre", e.target.value)}
+              onChange={(event) => set("titre", event.target.value)}
               autoFocus
             />
-          </label>
+          </Field>
 
-          <div className={styles.field}>
-            <span className={styles.label}>
-              <PlayersIcon className={styles.labelIcon} />
-              Joueurs (min - max)
-            </span>
+          <Field label="Joueurs (min - max)" Icon={PlayersIcon}>
             <div className={styles.pair}>
-              <input
-                className={styles.input}
-                type="number"
-                aria-label="Joueurs min"
-                value={form.joueursMin}
-                onChange={(e) => set("joueursMin", e.target.value)}
-              />
-              <input
-                className={styles.input}
-                type="number"
-                aria-label="Joueurs max"
-                value={form.joueursMax}
-                onChange={(e) => set("joueursMax", e.target.value)}
-              />
+              {textInput("joueursMin", "number")}
+              {textInput("joueursMax", "number")}
             </div>
-          </div>
+          </Field>
 
-          <label className={styles.field2}>
-            <span className={styles.label}>
-              <TextIcon className={styles.labelIcon} />
-              Sous-titre
-            </span>
-            <input
-              className={styles.input}
-              value={form.sousTitre}
-              onChange={(e) => set("sousTitre", e.target.value)}
-            />
-          </label>
+          <Field label="Sous-titre" Icon={TextIcon} className={styles.span2}>
+            {textInput("sousTitre")}
+          </Field>
 
-          <div className={styles.field}>
-            <span className={styles.label}>
-              <ClockIcon className={styles.labelIcon} />
-              Duree (min - max)
-            </span>
+          <Field label="Duree (min - max)" Icon={ClockIcon}>
             <div className={styles.pair}>
-              <input
-                className={styles.input}
-                type="number"
-                aria-label="Duree min"
-                value={form.dureeMin}
-                onChange={(e) => set("dureeMin", e.target.value)}
-              />
-              <input
-                className={styles.input}
-                type="number"
-                aria-label="Duree max"
-                value={form.dureeMax}
-                onChange={(e) => set("dureeMax", e.target.value)}
-              />
+              {textInput("dureeMin", "number")}
+              {textInput("dureeMax", "number")}
             </div>
-          </div>
+          </Field>
 
-          <label className={styles.field}>
-            <span className={styles.label}>
-              <DatabaseIcon className={styles.labelIcon} />
-              Source
-            </span>
+          <Field label="Source" Icon={DatabaseIcon}>
             <input
-              className={`${styles.input} ${styles.readonly}`}
+              className={`${controls.input} ${controls.readonly}`}
               value={form.source}
               readOnly
             />
-          </label>
+          </Field>
 
-          <div className={styles.field}>
-            <div className={styles.duo}>
-              <label className={styles.duoItem}>
-                <span className={styles.label}>
-                  <CalendarIcon className={styles.labelIcon} />
-                  Edition
-                </span>
-                <input
-                  className={styles.input}
-                  type="number"
-                  value={form.edition}
-                  onChange={(e) => set("edition", e.target.value)}
-                />
-              </label>
-              <label className={styles.duoItem}>
-                <span className={styles.label}>
-                  <AgeIcon className={styles.labelIcon} />
-                  Age
-                </span>
-                <input
-                  className={styles.input}
-                  type="text"
-                  placeholder="10+"
-                  value={form.age}
-                  onChange={(e) => set("age", e.target.value)}
-                />
-              </label>
-            </div>
+          <div className={styles.duo}>
+            <Field
+              label="Edition"
+              Icon={CalendarIcon}
+              className={styles.duoItem}
+            >
+              {textInput("edition", "number")}
+            </Field>
+            <Field label="Age" Icon={AgeIcon} className={styles.duoItem}>
+              {textInput("age")}
+            </Field>
           </div>
 
-          <div className={styles.field}>
-            <span className={styles.label}>
-              <StarIcon className={styles.labelIcon} />
-              Notes (perso - moyenne)
-            </span>
+          <Field label="Notes (perso - moyenne)" Icon={StarIcon}>
             <div className={styles.pair}>
+              {textInput("notePerso", "number")}
               <input
-                className={styles.input}
+                className={`${controls.input} ${controls.readonly}`}
                 type="number"
-                step="0.1"
-                aria-label="Note perso"
-                value={form.notePerso}
-                onChange={(e) => set("notePerso", e.target.value)}
-              />
-              <input
-                className={`${styles.input} ${styles.readonly}`}
-                type="number"
-                step="0.1"
-                aria-label="Note moyenne"
                 value={form.noteMoyenne}
                 readOnly
               />
             </div>
-          </div>
+          </Field>
 
-          <div className={styles.field}>
-            <span className={styles.label}>
-              <LayersIcon className={styles.labelIcon} />
-              Categories <em className={styles.hint}>separees par ;</em>
-            </span>
+          <Field label="Categories" Icon={LayersIcon} hint="separees par ;">
             <TagAutocomplete
               value={form.categories}
-              onChange={(v) => set("categories", v)}
+              onChange={(value) => set("categories", value)}
               options={CATEGORIES}
-              inputClassName={styles.input}
+              inputClassName={controls.input}
             />
-          </div>
+          </Field>
 
-          <div className={styles.field}>
-            <span className={styles.label}>
-              <PaletteIcon className={styles.labelIcon} />
-              Themes <em className={styles.hint}>separes par ;</em>
-            </span>
+          <Field label="Themes" Icon={PaletteIcon} hint="separes par ;">
             <TagAutocomplete
               value={form.themes}
-              onChange={(v) => set("themes", v)}
+              onChange={(value) => set("themes", value)}
               options={THEMES}
-              inputClassName={styles.input}
+              inputClassName={controls.input}
             />
-          </div>
+          </Field>
 
-          <div className={styles.field}>
-            <span className={styles.label}>
-              <BuildingIcon className={styles.labelIcon} />
-              Editeur(s) <em className={styles.hint}>separes par ;</em>
-            </span>
+          <Field label="Editeur(s)" Icon={BuildingIcon} hint="separes par ;">
             <TagAutocomplete
               value={form.editeur}
-              onChange={(v) => set("editeur", v)}
+              onChange={(value) => set("editeur", value)}
               options={EDITEURS}
-              inputClassName={styles.input}
+              inputClassName={controls.input}
             />
-          </div>
+          </Field>
 
           {FIELDS.map((field) => (
-            <label key={field.key} className={styles.field}>
-              <span className={styles.label}>
-                <field.Icon className={styles.labelIcon} />
-                {field.label}
-                {field.hint && <em className={styles.hint}>{field.hint}</em>}
-              </span>
-              <input
-                className={styles.input}
-                type={field.type}
-                step={field.step}
-                value={form[field.key]}
-                onChange={(e) => set(field.key, e.target.value)}
-              />
-            </label>
+            <Field
+              key={field.key}
+              label={field.label}
+              Icon={field.Icon}
+              hint={field.hint}
+            >
+              {textInput(field.key, field.type)}
+            </Field>
           ))}
 
-          <div className={styles.field}>
-            <div className={styles.duo}>
-              <label className={styles.duoItem}>
-                <span className={styles.label}>
-                  <CalendarIcon className={styles.labelIcon} />
-                  Date d'acquisition
-                </span>
-                <input
-                  className={styles.input}
-                  type="date"
-                  value={form.dateAcquisition}
-                  onChange={(e) => set("dateAcquisition", e.target.value)}
-                />
-              </label>
-              <label className={styles.duoItem}>
-                <span className={styles.label}>
-                  <HashIcon className={styles.labelIcon} />
-                  Myludo ID
-                </span>
-                <input
-                  className={`${styles.input} ${styles.readonly}`}
-                  value={form.myludoId}
-                  readOnly
-                />
-              </label>
-            </div>
+          <div className={styles.duo}>
+            <Field
+              label="Date d'acquisition"
+              Icon={CalendarIcon}
+              className={styles.duoItem}
+            >
+              {textInput("dateAcquisition", "date")}
+            </Field>
+            <Field label="Myludo ID" Icon={HashIcon} className={styles.duoItem}>
+              <input
+                className={`${controls.input} ${controls.readonly}`}
+                value={form.myludoId}
+                readOnly
+              />
+            </Field>
           </div>
 
-          <label className={styles.fieldWide}>
-            <span className={styles.label}>
-              <TextIcon className={styles.labelIcon} />
-              Description
-            </span>
+          <Field label="Description" Icon={TextIcon} className={styles.wide}>
             <textarea
-              className={styles.textarea}
+              className={controls.textarea}
               rows={3}
               value={form.description}
-              onChange={(e) => set("description", e.target.value)}
+              onChange={(event) => set("description", event.target.value)}
             />
-          </label>
+          </Field>
 
           {error && <p className={styles.error}>{error}</p>}
 
           <div className={styles.actions}>
             {game && (
-              <button
-                type="button"
-                className={styles.delete}
+              <IconButton
+                label="Supprimer le jeu"
+                variant="danger"
                 onClick={() => setConfirming(true)}
-                title="Supprimer le jeu"
-                aria-label="Supprimer le jeu"
               >
                 <TrashIcon />
-              </button>
+              </IconButton>
             )}
             <div className={styles.actionsRight}>
-              <button
-                type="button"
-                className={styles.cancel}
-                onClick={onClose}
-              >
+              <Button variant="secondary" onClick={onClose}>
                 Annuler
-              </button>
-              <button
-                type="submit"
-                className={styles.submit}
-                disabled={saving}
-              >
+              </Button>
+              <Button type="submit" disabled={saving}>
                 {saving ? "Enregistrement..." : "Enregistrer"}
-              </button>
+              </Button>
             </div>
           </div>
         </form>
@@ -477,21 +382,19 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
                 <strong>{form.titre || "ce jeu"}</strong> ?
               </p>
               <div className={styles.confirmActions}>
-                <button
-                  type="button"
-                  className={styles.cancel}
+                <Button
+                  variant="secondary"
                   onClick={() => setConfirming(false)}
                 >
                   Annuler
-                </button>
-                <button
-                  type="button"
-                  className={styles.deleteConfirm}
+                </Button>
+                <Button
+                  variant="danger"
                   onClick={handleDelete}
                   disabled={deleting}
                 >
                   {deleting ? "Suppression..." : "Supprimer"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

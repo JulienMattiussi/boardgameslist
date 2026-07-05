@@ -8,6 +8,8 @@ import { filterGames, sortGames, SortKey, GameKind } from "@/lib/filter";
 import { GameList } from "./GameList";
 import { PrintList } from "./PrintList";
 import { GameFormModal } from "./GameFormModal";
+import { Chip } from "./ui/Chip";
+import { IconButton } from "./ui/IconButton";
 import {
   SearchIcon,
   PlayersIcon,
@@ -72,7 +74,9 @@ export function Catalog({ games }: Props) {
   };
 
   const visible = useMemo(() => {
-    const bucket = DURATION_OPTIONS.find((option) => option.key === durationKey);
+    const bucket = DURATION_OPTIONS.find(
+      (option) => option.key === durationKey,
+    );
     return sortGames(
       filterGames(games, {
         query,
@@ -80,7 +84,7 @@ export function Catalog({ games }: Props) {
         duration: bucket ? { min: bucket.min, max: bucket.max } : null,
         kind: kind === "" ? null : kind,
       }),
-      sort
+      sort,
     );
   }, [games, query, players, durationKey, kind, sort]);
 
@@ -88,10 +92,12 @@ export function Catalog({ games }: Props) {
     const parts: string[] = [];
     if (query.trim()) parts.push(`« ${query.trim()} »`);
     if (players !== null) parts.push(`${players} joueurs`);
-    const bucket = DURATION_OPTIONS.find((option) => option.key === durationKey);
+    const bucket = DURATION_OPTIONS.find(
+      (option) => option.key === durationKey,
+    );
     if (bucket) parts.push(bucket.label);
     const kindOption = KIND_OPTIONS.find(
-      (option) => option.value !== "" && option.value === kind
+      (option) => option.value !== "" && option.value === kind,
     );
     if (kindOption) parts.push(kindOption.label);
     return parts.join(" · ");
@@ -147,25 +153,24 @@ export function Catalog({ games }: Props) {
           role="group"
           aria-label="Filtrer par nombre de joueurs"
         >
-          <span className={styles.groupIcon} title="Nombre de joueurs" aria-hidden>
+          <span
+            className={styles.groupIcon}
+            title="Nombre de joueurs"
+            aria-hidden
+          >
             <PlayersIcon />
           </span>
-          <button
-            type="button"
-            className={players === null ? styles.chipActive : styles.chip}
-            onClick={() => setPlayers(null)}
-          >
+          <Chip active={players === null} onClick={() => setPlayers(null)}>
             Tous
-          </button>
+          </Chip>
           {PLAYER_OPTIONS.map((count) => (
-            <button
+            <Chip
               key={count}
-              type="button"
-              className={players === count ? styles.chipActive : styles.chip}
+              active={players === count}
               onClick={() => setPlayers(players === count ? null : count)}
             >
               {count}
-            </button>
+            </Chip>
           ))}
         </div>
 
@@ -175,26 +180,22 @@ export function Catalog({ games }: Props) {
           aria-label="Filtrer par duree"
         >
           {[...DURATION_OPTIONS].reverse().map((option) => (
-            <button
+            <Chip
               key={option.key}
-              type="button"
-              className={
-                durationKey === option.key ? styles.chipActive : styles.chip
-              }
+              active={durationKey === option.key}
               onClick={() =>
                 setDurationKey(durationKey === option.key ? null : option.key)
               }
             >
               {option.label}
-            </button>
+            </Chip>
           ))}
-          <button
-            type="button"
-            className={durationKey === null ? styles.chipActive : styles.chip}
+          <Chip
+            active={durationKey === null}
             onClick={() => setDurationKey(null)}
           >
             Toutes
-          </button>
+          </Chip>
           <span className={styles.groupIcon} title="Duree" aria-hidden>
             <ClockIcon />
           </span>
@@ -203,39 +204,25 @@ export function Catalog({ games }: Props) {
 
       <div className={styles.actions}>
         <div className={styles.actionsLeft}>
-          <button
-            type="button"
-            className={detailed ? styles.chipActive : styles.chip}
+          <Chip
+            active={detailed}
             onClick={() => setDetailed((value) => !value)}
-            aria-pressed={detailed}
           >
             {detailed ? "Moins d'infos" : "Plus d'infos"}
-          </button>
+          </Chip>
           <p className={styles.count}>
             {visible.length} {visible.length > 1 ? "jeux" : "jeu"}
           </p>
         </div>
         <div className={styles.actionButtons}>
           {canEdit && (
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={openCreate}
-              title="Ajouter un jeu"
-              aria-label="Ajouter un jeu"
-            >
-              <PlusIcon className={styles.printIcon} />
-            </button>
+            <IconButton label="Ajouter un jeu" onClick={openCreate}>
+              <PlusIcon />
+            </IconButton>
           )}
-          <button
-            type="button"
-            className={styles.iconButton}
-            onClick={() => window.print()}
-            title="Imprimer la liste"
-            aria-label="Imprimer la liste"
-          >
-            <PrinterIcon className={styles.printIcon} />
-          </button>
+          <IconButton label="Imprimer la liste" onClick={() => window.print()}>
+            <PrinterIcon />
+          </IconButton>
         </div>
       </div>
 

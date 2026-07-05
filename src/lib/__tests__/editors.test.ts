@@ -2,7 +2,10 @@ import { test, expect } from "vitest";
 import { parseAllowlist, isEditor } from "../editors";
 
 test("parseAllowlist trims, lowercases and drops empties", () => {
-  expect(parseAllowlist(" A@x.com, b@Y.com ,, ")).toEqual(["a@x.com", "b@y.com"]);
+  expect(parseAllowlist(" A@x.com, b@Y.com ,, ")).toEqual([
+    "a@x.com",
+    "b@y.com",
+  ]);
   expect(parseAllowlist(undefined)).toEqual([]);
   expect(parseAllowlist("")).toEqual([]);
 });

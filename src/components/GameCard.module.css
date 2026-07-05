@@ -6,7 +6,9 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.18s ease, box-shadow 0.18s ease,
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
     border-color 0.18s ease;
 }
 
@@ -143,28 +145,6 @@
   margin: 0;
 }
 
-.metaItem {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-}
-
-.metaIcon {
-  color: var(--color-accent);
-  transform: translateY(0.15em);
-}
-
-.metaValue {
-  margin: 0;
-  font-weight: 600;
-}
-
-.metaLabel {
-  color: var(--color-muted);
-  font-size: 0.78rem;
-}
-
 .description {
   margin: 0;
   font-size: 0.85rem;
@@ -190,23 +170,6 @@
   flex-direction: column;
   gap: 0.3rem;
   margin: 0;
-  font-size: 0.8rem;
-}
-
-.detailRow {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.detailLabel {
-  flex-shrink: 0;
-  width: 5.5rem;
-  color: var(--color-muted);
-}
-
-.detailValue {
-  margin: 0;
-  color: var(--color-fg);
 }
 
 .tag {

@@ -4,7 +4,7 @@ import { parseAllowlist, isEditor } from "@/lib/editors";
 
 const allowlist = parseAllowlist(process.env.EDITORS_ALLOWLIST);
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth } = NextAuth({
   trustHost: true,
   providers: [
     Google({

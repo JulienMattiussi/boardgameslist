@@ -121,11 +121,7 @@ test("returns an empty array when there are no rows", () => {
 });
 
 test("rowIndex maps to the 1-based sheet row", () => {
-  const games = rowsToGames([
-    ["TITRE"],
-    ["Alpha"],
-    ["Beta"],
-  ]);
+  const games = rowsToGames([["TITRE"], ["Alpha"], ["Beta"]]);
   expect(games.map((g) => [g.titre, g.rowIndex])).toEqual([
     ["Alpha", 2],
     ["Beta", 3],

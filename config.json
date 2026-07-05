@@ -1,6 +1,4 @@
 {
-  "base_url": "https://boardgameslist.vercel.app",
   "site_title": "Jeux de plateau",
-  "site_description": "Ma collection de jeux de plateau, filtrable et imprimable",
-  "games_per_page": 20
+  "site_description": "Ma collection de jeux de plateau, filtrable et imprimable"
 }

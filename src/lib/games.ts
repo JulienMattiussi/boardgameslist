@@ -129,7 +129,11 @@ function isoDateToSerial(iso: string): number | "" {
   if (!match) {
     return "";
   }
-  const utc = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  const utc = Date.UTC(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+  );
   return Math.round((utc - Date.UTC(1899, 11, 30)) / 86400000);
 }
 

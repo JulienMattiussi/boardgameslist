@@ -38,7 +38,10 @@ Phase 0 terminée + **gros bond technique le 2026-07-05** :
     société/énigme via `gameKind`), `sortGames` (titre / note perso / note moyenne /
     durée / âge mini). Fonctions pures testées.
     La pastille de note de `GameCard` affiche perso + moyenne (split + tooltip),
-    chaque valeur colorée par niveau.
+    chaque valeur colorée par niveau. Toggle "Plus/Moins d'infos" (chip, à gauche du
+    compteur) qui déplie edition/themes/mecanismes/emplacement/date dans les vignettes.
+    Langage visuel : cliquable = fond/rond (chips, ronds d'action), statique = plat
+    (tags de catégorie en contour, icônes de groupe de filtre sans fond).
   - `GameCard` affiche la description (clamp 3 lignes). Logo meeple + dé :
     `src/app/icon.svg` (favicon) + `Logo` dans `icons.tsx` (hero, centré sur le
     titre). Eyebrow "board game list", pas de sous-titre. Filtres joueurs/durée
@@ -103,8 +106,20 @@ Phase 0 terminée + **gros bond technique le 2026-07-05** :
     demi-champs regroupés 2 par case pour gagner de la place (joueurs min/max,
     durée min/max, notes perso/moyenne, edition/age, date/myludo_id).
 
-**Prochaine étape** : Phase 5 (import Myludo) ou suppression de jeu / affinages UI.
-Voir section 8.
+- **Checkup / nettoyage (2026-07-05)** : retrait du mort (`pagination.ts`+test,
+  dossier `scripts/`, champs `config` inutilisés `base_url`/`games_per_page`).
+  README réécrit (n'était plus le template blog). Kit UI factorisé dans
+  `src/components/ui/` (`Button`, `IconButton`, `Chip`, `Field`, `MetaItem`,
+  `DetailRow`, `controls.module.css`) et réutilisé partout (Catalog, GameCard,
+  GameFormModal réduit de ~500 à ~370 lignes, AuthControl). Tests composants ajoutés
+  (jsdom + `@testing-library/react`, `vitest.config.ts` en CSS modules non-scoped).
+  Total : 31 tests verts. Aucun export mort, commentaires propres.
+- **Outillage qualité (2026-07-05)** : ESLint (flat config native `eslint-config-next`,
+  pas de FlatCompat), Prettier (+ `eslint-config-prettier`, `.md` exclus), Knip
+  (fichiers/deps/exports inutilisés). Scripts + cibles Makefile : `make lint`,
+  `make format`, `make knip`, `make test`, `make check` (tout). Tout au vert.
+
+**Prochaine étape** : Phase 5 (import Myludo). Voir section 8.
 
 ## 2. Décisions actées (ne pas re-débattre)
 

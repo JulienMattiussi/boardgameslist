@@ -1,11 +1,6 @@
 import { Game } from "./games";
 
-export type SortKey =
-  | "titre"
-  | "notePerso"
-  | "noteMoyenne"
-  | "duree"
-  | "age";
+export type SortKey = "titre" | "notePerso" | "noteMoyenne" | "duree" | "age";
 
 export type GameKind = "societe" | "enigme";
 
@@ -51,15 +46,13 @@ export function matchesQuery(game: Game, query: string): boolean {
       game.categories.join(" "),
       game.themes.join(" "),
       game.description,
-    ].join(" ")
+    ].join(" "),
   );
   return haystack.includes(q);
 }
 
 export function gameKind(game: Game): GameKind {
-  const haystack = normalize(
-    [...game.categories, ...game.themes].join(" ")
-  );
+  const haystack = normalize([...game.categories, ...game.themes].join(" "));
   return ENIGMA_KEYWORDS.some((keyword) => haystack.includes(keyword))
     ? "enigme"
     : "societe";
@@ -89,9 +82,10 @@ export function filterGames(games: Game[], filters: Filters): Game[] {
   return games.filter(
     (game) =>
       matchesQuery(game, filters.query) &&
-      (filters.players === null || gameSupportsPlayers(game, filters.players)) &&
+      (filters.players === null ||
+        gameSupportsPlayers(game, filters.players)) &&
       (filters.duration === null || gameInDuration(game, filters.duration)) &&
-      (filters.kind === null || gameKind(game) === filters.kind)
+      (filters.kind === null || gameKind(game) === filters.kind),
   );
 }
 
@@ -108,18 +102,20 @@ export function sortGames(games: Game[], key: SortKey): Game[] {
     case "notePerso":
       return sorted.sort((a, b) => (b.notePerso ?? -1) - (a.notePerso ?? -1));
     case "noteMoyenne":
-      return sorted.sort((a, b) => (b.noteMoyenne ?? -1) - (a.noteMoyenne ?? -1));
+      return sorted.sort(
+        (a, b) => (b.noteMoyenne ?? -1) - (a.noteMoyenne ?? -1),
+      );
     case "duree":
       return sorted.sort(
         (a, b) =>
           (a.dureeMax ?? a.dureeMin ?? Number.POSITIVE_INFINITY) -
-          (b.dureeMax ?? b.dureeMin ?? Number.POSITIVE_INFINITY)
+          (b.dureeMax ?? b.dureeMin ?? Number.POSITIVE_INFINITY),
       );
     case "age":
       return sorted.sort(
         (a, b) =>
           (ageValue(a.age) ?? Number.POSITIVE_INFINITY) -
-          (ageValue(b.age) ?? Number.POSITIVE_INFINITY)
+          (ageValue(b.age) ?? Number.POSITIVE_INFINITY),
       );
   }
 }

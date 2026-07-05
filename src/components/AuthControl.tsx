@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession, signIn, signOut } from "next-auth/react";
+import { Button } from "./ui/Button";
 import styles from "./AuthControl.module.css";
 
 export function AuthControl() {
@@ -14,24 +15,16 @@ export function AuthControl() {
     return (
       <div className={styles.control}>
         <span className={styles.email}>{session.user.email}</span>
-        <button
-          type="button"
-          className={styles.button}
-          onClick={() => signOut()}
-        >
+        <Button variant="soft" onClick={() => signOut()}>
           Se deconnecter
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
-    <button
-      type="button"
-      className={styles.button}
-      onClick={() => signIn("google")}
-    >
+    <Button variant="soft" onClick={() => signIn("google")}>
       Espace editeur
-    </button>
+    </Button>
   );
 }

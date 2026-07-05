@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start -p 4210",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "knip": "knip",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "engines": {
     "node": ">=22"
@@ -20,10 +24,17 @@
     "react-dom": "19"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^26.1.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "prettier": "~2.5.1",
+    "eslint": "^9",
+    "eslint-config-next": "^16.2.10",
+    "eslint-config-prettier": "^10.1.8",
+    "jsdom": "^29.1.1",
+    "knip": "^6.24.0",
+    "prettier": "^3.9.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"
   }

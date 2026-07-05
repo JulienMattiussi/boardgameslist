@@ -7,7 +7,7 @@ export function parseAllowlist(raw: string | undefined): string[] {
 
 export function isEditor(
   email: string | null | undefined,
-  allowlist: string[]
+  allowlist: string[],
 ): boolean {
   if (!email) {
     return false;

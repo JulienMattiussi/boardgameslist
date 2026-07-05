@@ -1,0 +1,27 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.labelIcon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  color: var(--color-accent);
+}
+
+.hint {
+  font-weight: 400;
+  font-style: normal;
+  color: var(--color-muted);
+  opacity: 0.8;
+}

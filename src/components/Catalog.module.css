@@ -29,7 +29,9 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .searchInput:focus {
@@ -94,31 +96,6 @@
   cursor: default;
 }
 
-.chip,
-.chipActive {
-  min-width: 2.2rem;
-  padding: 0.4rem 0.7rem;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-fg);
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-
-.chip:hover {
-  border-color: var(--color-accent);
-}
-
-.chipActive {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-accent-contrast);
-}
-
 .actions {
   display: flex;
   align-items: center;
@@ -142,29 +119,6 @@
 .actionButtons {
   display: inline-flex;
   gap: 0.5rem;
-}
-
-.iconButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.iconButton:hover {
-  color: var(--color-accent-contrast);
-  background: var(--color-accent);
-}
-
-.printIcon {
-  font-size: 1.25rem;
 }
 
 @media print {

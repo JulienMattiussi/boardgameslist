@@ -18,13 +18,12 @@ sample (mostly from the Myludo JSON + one per `.ods` column), and only test the 
 ## Current state vs target
 
 - **Current**: Next.js 16 (App Router, `src/app/`) + React 19 + TypeScript strict,
-  Node 22. The Google Sheet is already the DB: `src/lib/sheets.ts` reads it via a
-  service account, `src/lib/games.ts` parses rows into typed `Game` objects, and
-  `src/app/page.tsx` renders them with ISR (`revalidate = 3600`). The legacy MDX
-  blog + Netlify CMS + social embeds have been removed. Public read path is done.
-- **Target (remaining)**: editor writes via a server API route (Google service
-  account), editor access via Auth.js/Google with an email allow-list, printable
-  filtered lists, Myludo import. See the phased plan.
+  Node 22. Google Sheet as DB. Done: public read (ISR), filterable catalog,
+  printable list, editor auth (Auth.js/Google + allow-list), and full editing
+  (add/edit/delete via `/api/games` + a modal). The legacy MDX blog + Netlify CMS
+  have been removed.
+- **Target (remaining)**: Myludo import (parse + dedup cascade + reconciliation),
+  then the full 283-game import. See the phased plan.
 
 Path alias: `@/*` maps to `src/*`. When in doubt about direction, follow the plan.
 
@@ -55,6 +54,11 @@ Path alias: `@/*` maps to `src/*`. When in doubt about direction, follow the pla
   hardcode a color in a component - use `var(--token)`.
 - **No speculative abstractions** - don't add helpers, options, or fallbacks not
   needed by the current task.
+- **Reuse the shared UI kit** in `src/components/ui/` (`Button`, `IconButton`,
+  `Chip`, `Field`, `MetaItem`, `DetailRow`, `controls.module.css`) instead of
+  re-styling one-off buttons/chips/fields. Visual language: clickable = filled or
+  round (buttons, chips); static = flat (tags, group-icon markers). Each ui
+  primitive is unit-tested.
 - **Pure logic is unit-tested** (parsing, dedup/reconciliation, filters). Keep it
   in pure exported functions, not buried in I/O, so it can be tested.
 - **Client components** using hooks or event handlers start with `"use client"`.
@@ -97,9 +101,13 @@ the user's running dev server.
 
 ```bash
 make install     # yarn install
-make start       # yarn dev (dev server)
+make start       # yarn dev (dev server, port 4210)
 make build       # yarn build
-make start-prod  # yarn start (production server)
-yarn test        # vitest run (one-shot)
+make start-prod  # yarn start (production server, port 4210)
+make test        # vitest run (one-shot)
+make lint        # eslint
+make format      # prettier --write
+make knip        # find unused files/deps/exports
+make check       # lint + format:check + knip + tests
 yarn test:watch  # vitest (watch mode)
 ```

@@ -54,56 +54,130 @@ test("query matching is accent- and case-insensitive across fields", () => {
 test("gameKind classifies puzzle/enquete games as enigme, others as societe", () => {
   expect(gameKind(makeGame({ categories: ["Jeu de Cartes"] }))).toBe("societe");
   expect(
-    gameKind(makeGame({ categories: ["Livre dont vous êtes le héros"], themes: ["Enquêtes & Mystères"] }))
+    gameKind(
+      makeGame({
+        categories: ["Livre dont vous êtes le héros"],
+        themes: ["Enquêtes & Mystères"],
+      }),
+    ),
   ).toBe("enigme");
   expect(gameKind(makeGame({ themes: ["Escape Game"] }))).toBe("enigme");
 });
 
 test("player support respects ranges and open-ended bounds", () => {
-  expect(gameSupportsPlayers(makeGame({ joueursMin: 2, joueursMax: 6 }), 4)).toBe(true);
-  expect(gameSupportsPlayers(makeGame({ joueursMin: 2, joueursMax: 6 }), 8)).toBe(false);
-  expect(gameSupportsPlayers(makeGame({ joueursMin: 1, joueursMax: null }), 9)).toBe(true);
-  expect(gameSupportsPlayers(makeGame({ joueursMin: null, joueursMax: null }), 2)).toBe(false);
+  expect(
+    gameSupportsPlayers(makeGame({ joueursMin: 2, joueursMax: 6 }), 4),
+  ).toBe(true);
+  expect(
+    gameSupportsPlayers(makeGame({ joueursMin: 2, joueursMax: 6 }), 8),
+  ).toBe(false);
+  expect(
+    gameSupportsPlayers(makeGame({ joueursMin: 1, joueursMax: null }), 9),
+  ).toBe(true);
+  expect(
+    gameSupportsPlayers(makeGame({ joueursMin: null, joueursMax: null }), 2),
+  ).toBe(false);
 });
 
 test("duration bucket membership uses range overlap and open-ended max", () => {
   const short = { min: 0, max: 29 };
   const epic = { min: 121, max: Number.POSITIVE_INFINITY };
-  expect(gameInDuration(makeGame({ dureeMin: 15, dureeMax: 30 }), short)).toBe(true);
-  expect(gameInDuration(makeGame({ dureeMin: 60, dureeMax: 60 }), short)).toBe(false);
-  expect(gameInDuration(makeGame({ dureeMin: 120, dureeMax: null }), epic)).toBe(true);
-  expect(gameInDuration(makeGame({ dureeMin: null, dureeMax: null }), short)).toBe(false);
+  expect(gameInDuration(makeGame({ dureeMin: 15, dureeMax: 30 }), short)).toBe(
+    true,
+  );
+  expect(gameInDuration(makeGame({ dureeMin: 60, dureeMax: 60 }), short)).toBe(
+    false,
+  );
+  expect(
+    gameInDuration(makeGame({ dureeMin: 120, dureeMax: null }), epic),
+  ).toBe(true);
+  expect(
+    gameInDuration(makeGame({ dureeMin: null, dureeMax: null }), short),
+  ).toBe(false);
 });
 
 test("filterGames combines query, player, duration and kind filters", () => {
   const games = [
-    makeGame({ titre: "Citadelles", joueursMin: 2, joueursMax: 8, dureeMax: 60, categories: ["Jeu de Cartes"] }),
-    makeGame({ titre: "The Mind", joueursMin: 2, joueursMax: 4, dureeMax: 15, categories: ["Jeu de Cartes"] }),
-    makeGame({ titre: "Pictionary Man", joueursMin: 2, joueursMax: null, dureeMax: null }),
-    makeGame({ titre: "Enquete", joueursMin: 1, joueursMax: 4, dureeMax: 90, themes: ["Enquêtes"] }),
+    makeGame({
+      titre: "Citadelles",
+      joueursMin: 2,
+      joueursMax: 8,
+      dureeMax: 60,
+      categories: ["Jeu de Cartes"],
+    }),
+    makeGame({
+      titre: "The Mind",
+      joueursMin: 2,
+      joueursMax: 4,
+      dureeMax: 15,
+      categories: ["Jeu de Cartes"],
+    }),
+    makeGame({
+      titre: "Pictionary Man",
+      joueursMin: 2,
+      joueursMax: null,
+      dureeMax: null,
+    }),
+    makeGame({
+      titre: "Enquete",
+      joueursMin: 1,
+      joueursMax: 4,
+      dureeMax: 90,
+      themes: ["Enquêtes"],
+    }),
   ];
   const all = { players: null, duration: null, kind: null } as const;
-  expect(filterGames(games, { ...all, query: "the" }).map((g) => g.titre)).toEqual(["The Mind"]);
-  expect(filterGames(games, { ...all, query: "", players: 6 }).map((g) => g.titre)).toEqual([
-    "Citadelles",
-    "Pictionary Man",
-  ]);
   expect(
-    filterGames(games, { ...all, query: "", duration: { min: 0, max: 29 } }).map((g) => g.titre)
+    filterGames(games, { ...all, query: "the" }).map((g) => g.titre),
   ).toEqual(["The Mind"]);
-  expect(filterGames(games, { ...all, query: "", kind: "enigme" }).map((g) => g.titre)).toEqual(["Enquete"]);
+  expect(
+    filterGames(games, { ...all, query: "", players: 6 }).map((g) => g.titre),
+  ).toEqual(["Citadelles", "Pictionary Man"]);
+  expect(
+    filterGames(games, {
+      ...all,
+      query: "",
+      duration: { min: 0, max: 29 },
+    }).map((g) => g.titre),
+  ).toEqual(["The Mind"]);
+  expect(
+    filterGames(games, { ...all, query: "", kind: "enigme" }).map(
+      (g) => g.titre,
+    ),
+  ).toEqual(["Enquete"]);
 });
 
 test("sortGames orders by title, rating, then duration without mutating input", () => {
   const games = [
     makeGame({ titre: "Zeus", noteMoyenne: 6, notePerso: 9, dureeMax: 90 }),
     makeGame({ titre: "Alpha", noteMoyenne: 8, notePerso: 5, dureeMax: 30 }),
-    makeGame({ titre: "Mid", noteMoyenne: null, notePerso: null, dureeMax: null }),
+    makeGame({
+      titre: "Mid",
+      noteMoyenne: null,
+      notePerso: null,
+      dureeMax: null,
+    }),
   ];
-  expect(sortGames(games, "titre").map((g) => g.titre)).toEqual(["Alpha", "Mid", "Zeus"]);
-  expect(sortGames(games, "noteMoyenne").map((g) => g.titre)).toEqual(["Alpha", "Zeus", "Mid"]);
-  expect(sortGames(games, "notePerso").map((g) => g.titre)).toEqual(["Zeus", "Alpha", "Mid"]);
-  expect(sortGames(games, "duree").map((g) => g.titre)).toEqual(["Alpha", "Zeus", "Mid"]);
+  expect(sortGames(games, "titre").map((g) => g.titre)).toEqual([
+    "Alpha",
+    "Mid",
+    "Zeus",
+  ]);
+  expect(sortGames(games, "noteMoyenne").map((g) => g.titre)).toEqual([
+    "Alpha",
+    "Zeus",
+    "Mid",
+  ]);
+  expect(sortGames(games, "notePerso").map((g) => g.titre)).toEqual([
+    "Zeus",
+    "Alpha",
+    "Mid",
+  ]);
+  expect(sortGames(games, "duree").map((g) => g.titre)).toEqual([
+    "Alpha",
+    "Zeus",
+    "Mid",
+  ]);
   expect(games[0].titre).toBe("Zeus");
 });
 

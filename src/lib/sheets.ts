@@ -9,7 +9,7 @@ const LAST_COLUMN = "V";
 type CellValue = string | number;
 
 function getAuth(
-  scopes: string[]
+  scopes: string[],
 ): InstanceType<typeof google.auth.GoogleAuth> {
   const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
   if (privateKey) {
@@ -46,7 +46,9 @@ export async function readSheetRows(): Promise<string[][]> {
     dateTimeRenderOption: "FORMATTED_STRING",
   });
   const values = res.data.values ?? [];
-  return values.map((row) => row.map((cell) => (cell == null ? "" : String(cell))));
+  return values.map((row) =>
+    row.map((cell) => (cell == null ? "" : String(cell))),
+  );
 }
 
 export async function appendGameRow(values: CellValue[]): Promise<void> {
@@ -65,7 +67,7 @@ export async function appendGameRow(values: CellValue[]): Promise<void> {
 
 export async function updateGameRow(
   rowIndex: number,
-  values: CellValue[]
+  values: CellValue[],
 ): Promise<void> {
   const sheets = google.sheets({
     version: "v4",

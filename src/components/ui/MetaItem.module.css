@@ -1,0 +1,20 @@
+.item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.icon {
+  color: var(--color-accent);
+  transform: translateY(0.15em);
+}
+
+.value {
+  font-weight: 600;
+}
+
+.label {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+}

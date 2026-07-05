@@ -34,13 +34,13 @@ export function TagAutocomplete({
     .filter(
       (option) =>
         !chosen.has(normalize(option)) &&
-        (query === "" || normalize(option).includes(query))
+        (query === "" || normalize(option).includes(query)),
     )
     .slice(0, 8);
 
   function pick(option: string) {
     const parts = [...tokens.slice(0, -1), option].filter(
-      (token) => token !== ""
+      (token) => token !== "",
     );
     onChange(`${parts.join("; ")}; `);
   }

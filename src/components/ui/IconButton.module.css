@@ -1,0 +1,41 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.soft {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+.soft:hover {
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+}
+
+.danger {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+.danger:hover {
+  color: var(--color-danger-contrast);
+  background: var(--color-danger);
+}
+
+.ghost {
+  color: var(--color-muted);
+  background: none;
+}
+.ghost:hover {
+  color: var(--color-fg);
+  background: var(--color-card-bg);
+}

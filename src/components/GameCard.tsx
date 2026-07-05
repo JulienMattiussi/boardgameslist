@@ -1,6 +1,8 @@
 import { Game } from "@/lib/games";
 import { formatRange, hueFromString, ratingLevel } from "@/lib/format";
 import { PlayersIcon, ClockIcon, AgeIcon, StarIcon, EditIcon } from "./icons";
+import { MetaItem } from "./ui/MetaItem";
+import { DetailRow } from "./ui/DetailRow";
 import styles from "./GameCard.module.css";
 
 type Props = {
@@ -88,29 +90,15 @@ export function GameCard({ game, onEdit, detailed }: Props) {
       </div>
 
       <div className={styles.body}>
-        <dl className={styles.meta}>
+        <div className={styles.meta}>
           {players && (
-            <div className={styles.metaItem}>
-              <PlayersIcon className={styles.metaIcon} />
-              <dd className={styles.metaValue}>{players}</dd>
-              <dt className={styles.metaLabel}>joueurs</dt>
-            </div>
+            <MetaItem Icon={PlayersIcon} value={players} label="joueurs" />
           )}
           {duration && (
-            <div className={styles.metaItem}>
-              <ClockIcon className={styles.metaIcon} />
-              <dd className={styles.metaValue}>{duration}</dd>
-              <dt className={styles.metaLabel}>min</dt>
-            </div>
+            <MetaItem Icon={ClockIcon} value={duration} label="min" />
           )}
-          {game.age && (
-            <div className={styles.metaItem}>
-              <AgeIcon className={styles.metaIcon} />
-              <dd className={styles.metaValue}>{game.age}</dd>
-              <dt className={styles.metaLabel}>age</dt>
-            </div>
-          )}
-        </dl>
+          {game.age && <MetaItem Icon={AgeIcon} value={game.age} label="age" />}
+        </div>
 
         {game.description && (
           <p className={styles.description}>{game.description}</p>
@@ -129,10 +117,11 @@ export function GameCard({ game, onEdit, detailed }: Props) {
         {detailed && details.length > 0 && (
           <dl className={styles.details}>
             {details.map((detail) => (
-              <div key={detail.label} className={styles.detailRow}>
-                <dt className={styles.detailLabel}>{detail.label}</dt>
-                <dd className={styles.detailValue}>{detail.value}</dd>
-              </div>
+              <DetailRow
+                key={detail.label}
+                label={detail.label}
+                value={detail.value}
+              />
             ))}
           </dl>
         )}

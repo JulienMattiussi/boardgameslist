@@ -1,0 +1,15 @@
+import styles from "./DetailRow.module.css";
+
+type Props = {
+  label: string;
+  value: string;
+};
+
+export function DetailRow({ label, value }: Props) {
+  return (
+    <div className={styles.row}>
+      <dt className={styles.label}>{label}</dt>
+      <dd className={styles.value}>{value}</dd>
+    </div>
+  );
+}

@@ -1,6 +1,7 @@
 # Plan de conception et de migration - boardgameslist
 
-> Statut : Phases 0 et 1 implémentées. Dernière mise à jour : 2026-07-05.
+> Statut : Phases 0 à 4 implémentées (lecture ISR, listes imprimables, auth, édition).
+> Reste la Phase 5 (import Myludo). Dernière mise à jour : 2026-07-05.
 >
 > **Écarts actés vs conception initiale (2026-07-05) :**
 > - **App Router** (et non Pages Router) : la stack est passée à Next 16 + React 19.
