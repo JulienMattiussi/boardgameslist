@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { Game } from "@/lib/games";
 import { filterGames, sortGames, SortKey, GameKind } from "@/lib/filter";
 import { GameList } from "./GameList";
-import { SearchIcon, PlayersIcon, ClockIcon } from "./icons";
+import { PrintList } from "./PrintList";
+import { SearchIcon, PlayersIcon, ClockIcon, PrinterIcon } from "./icons";
 import styles from "./Catalog.module.css";
 
 type Props = {
@@ -52,6 +53,19 @@ export function Catalog({ games }: Props) {
       sort
     );
   }, [games, query, players, durationKey, kind, sort]);
+
+  const summary = useMemo(() => {
+    const parts: string[] = [];
+    if (query.trim()) parts.push(`« ${query.trim()} »`);
+    if (players !== null) parts.push(`${players} joueurs`);
+    const bucket = DURATION_OPTIONS.find((option) => option.key === durationKey);
+    if (bucket) parts.push(bucket.label);
+    const kindOption = KIND_OPTIONS.find(
+      (option) => option.value !== "" && option.value === kind
+    );
+    if (kindOption) parts.push(kindOption.label);
+    return parts.join(" · ");
+  }, [query, players, durationKey, kind]);
 
   return (
     <section>
@@ -157,11 +171,26 @@ export function Catalog({ games }: Props) {
         </div>
       </div>
 
-      <p className={styles.count}>
-        {visible.length} {visible.length > 1 ? "jeux" : "jeu"}
-      </p>
+      <div className={styles.actions}>
+        <p className={styles.count}>
+          {visible.length} {visible.length > 1 ? "jeux" : "jeu"}
+        </p>
+        <button
+          type="button"
+          className={styles.printButton}
+          onClick={() => window.print()}
+          title="Imprimer la liste"
+          aria-label="Imprimer la liste"
+        >
+          <PrinterIcon className={styles.printIcon} />
+        </button>
+      </div>
 
-      <GameList games={visible} />
+      <div className={styles.screenList}>
+        <GameList games={visible} />
+      </div>
+
+      <PrintList games={visible} summary={summary} />
     </section>
   );
 }

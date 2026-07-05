@@ -123,15 +123,48 @@
   color: var(--color-accent-contrast);
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem;
+}
+
 .count {
-  margin: 1.25rem 0 1rem;
+  margin: 0;
   font-size: 0.85rem;
   color: var(--color-muted);
 }
 
+.printButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.printButton:hover {
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+}
+
+.printIcon {
+  font-size: 1.25rem;
+}
+
 @media print {
   .toolbar,
-  .filters {
+  .filters,
+  .actions,
+  .screenList {
     display: none;
   }
 }

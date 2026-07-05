@@ -67,6 +67,16 @@ export function StarIcon({ className }: IconProps) {
   );
 }
 
+export function PrinterIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M6 9V3h12v6" />
+      <path d="M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2" />
+      <path d="M6 14h12v7H6z" />
+    </svg>
+  );
+}
+
 export function Logo({ className }: IconProps) {
   return (
     <svg

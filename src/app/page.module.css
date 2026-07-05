@@ -4,6 +4,16 @@
   padding: 3rem 1.5rem 4rem;
 }
 
+@media print {
+  .main {
+    padding: 0;
+    max-width: none;
+  }
+  .hero {
+    display: none;
+  }
+}
+
 .hero {
   margin-bottom: 2.5rem;
 }

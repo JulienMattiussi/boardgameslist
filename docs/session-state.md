@@ -49,8 +49,17 @@ Phase 0 terminée + **gros bond technique le 2026-07-05** :
     icônes, pastilles catégories, crédits), `icons.tsx` (SVG inline). Total tests :
     22 verts.
 
-**Prochaine étape** : Phase 2 (listes imprimables filtrées) ou enrichir l'affichage
-(fiche jeu, tri/recherche). Voir section 8.
+- **Phase 2 (liste imprimable filtrée) faite** : bouton "Imprimer la liste"
+  (`window.print()`), composant `PrintList.tsx` reproduisant la présentation du
+  tableur d'origine : 3 blocs côte à côte, colonnes `TITRE / Nb J. / Durée` avec
+  traits verticaux de séparation (épais entre blocs, fins entre sous-colonnes),
+  en-tête = titre + résumé des filtres actifs + compte. Visible seulement en
+  `@media print` ; le reste de l'UI (hero, toolbar, filtres, cartes) masqué.
+  Export PDF via la boîte d'impression du navigateur (pas de lib). La liste reflète
+  les filtres/tri courants.
+
+**Prochaine étape** : déploiement Vercel, ou Phase 3 (auth éditeurs, bloquée par le
+setup OAuth Google). Voir section 8.
 
 ## 2. Décisions actées (ne pas re-débattre)
 
@@ -219,11 +228,12 @@ séparateur de formule `;`) :
    `Defis Scrabble` ajouté pour couvrir le cas durée `trop`).
 3. ~~Phase 1 : lecture publique (ISR) + composants d'affichage.~~ FAIT 2026-07-05
    (avec l'upgrade Next 16 / App Router, voir section 1).
-4. Phase 2 : listes imprimables filtrées (UI de filtres + `@media print`). Les vues
-   sont des filtres calculés, pas des onglets (voir plan section 5). <- PROCHAINE.
-5. Suite selon [plan-migration.md](plan-migration.md) : auth éditeur, édition,
-   import Myludo.
-6. En toute fin : test d'import des 283 jeux du `.ods`.
+4. ~~Phase 2 : listes imprimables filtrées.~~ FAIT 2026-07-05 (`PrintList` + print CSS).
+5. Déploiement Vercel (le site lecture seule + impression est prêt). <- PROCHAINE
+   possible. Besoin : compte Vercel + clé de service en variable d'env.
+6. Suite selon [plan-migration.md](plan-migration.md) : auth éditeur (Phase 3,
+   bloquée par setup OAuth Google), édition (Phase 4), import Myludo (Phase 5).
+7. En toute fin : test d'import des 283 jeux du `.ods`.
 
 Idées d'affichage intermédiaires possibles avant/pendant Phase 2 : tri, recherche,
 fiche jeu détaillée, déploiement Vercel (le repo est déjà prévu pour).
