@@ -1,16 +1,16 @@
-# Plan de conception et de migration - boardgameslist
+# Conception - boardgameslist
 
-> Statut : Phases 0 à 4 implémentées (lecture ISR, listes imprimables, auth, édition).
-> Reste la Phase 5 (import Myludo). Dernière mise à jour : 2026-07-05.
+> Doc de conception (contexte, architecture, modele de donnees, regles d'import).
+> Le projet est construit ; ce document sert de reference "pourquoi c'est fait
+> ainsi". Pour la config operationnelle et les decisions, voir
+> [reference.md](reference.md).
 >
-> **Écarts actés vs conception initiale (2026-07-05) :**
-> - **App Router** (et non Pages Router) : la stack est passée à Next 16 + React 19.
->   Les mentions `getStaticProps`/`revalidate` ci-dessous se traduisent en App Router
->   par un Server Component `async` + `export const revalidate`.
-> - **Nettoyage (Phase 6) avancé** : MDX, Netlify CMS et embeds sociaux ont été
->   retirés dès l'upgrade, car ils bloquaient le passage à Next 16 / React 19.
-> - **Node 22** épinglé ; Next 10 était incompatible.
-> - Tests : **vitest** (et non jest).
+> Ecarts vs la conception initiale, tels que reellement implementes :
+> - **App Router** (Next 16 + React 19), pas Pages Router : les mentions
+>   `getStaticProps`/`revalidate` ci-dessous = Server Component `async` +
+>   `export const revalidate`.
+> - MDX, Netlify CMS et embeds sociaux retires des l'upgrade.
+> - **Node 22** epingle ; tests en **vitest**.
 
 ## 1. Contexte et objectif
 
@@ -241,64 +241,7 @@ Variables d'environnement attendues (a finaliser) :
 - `GOOGLE_SERVICE_ACCOUNT_EMAIL`
 - `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
 - `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`
-- `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
+- `AUTH_SECRET` (Auth.js v5)
 - `EDITORS_ALLOWLIST` (emails autorises, separes par des virgules)
 
-## 11. Plan de migration par etapes
-
-### Phase 0 - Preparation
-
-- Creer le Sheet vierge avec le schema de la section 5.
-- Setup Google Cloud (compte de service + client OAuth).
-- Migrer les 283 jeux existants du Sheet actuel vers le nouveau schema (script ponctuel :
-  parser `TITRE`, `Nb J.` min/max, `Duree`, marquer `source = manuel`).
-
-### Phase 1 - Lecture publique (SSG/ISR)
-
-- Couche d'acces Sheets en lecture (compte de service).
-- Adapter les types et `src/lib` (remplacer `games.ts` MDX par une lecture Sheet).
-- Adapter les composants d'affichage aux nouveaux champs.
-- Deployer sur Vercel avec ISR. A ce stade, site public en lecture seule fonctionnel.
-
-### Phase 2 - Listes imprimables filtrees
-
-- UI de selection de filtres.
-- Feuille de style print / export PDF.
-- Remplacer la logique des anciens onglets par des filtres calcules.
-
-### Phase 3 - Authentification editeur
-
-- Integrer Auth.js + Google + allow-list.
-- Proteger les routes d'edition.
-
-### Phase 4 - Edition des jeux via l'app
-
-- API route d'ecriture (compte de service).
-- UI CRUD des jeux.
-- Revalidation a la demande apres edition.
-
-### Phase 5 - Import Myludo
-
-- Parsing CSV et JSON Myludo.
-- Cascade de dedoublonnage (section 6).
-- Ecran de previsualisation, conflits et reconciliation.
-- Application des changements + revalidation.
-
-### Phase 6 - Nettoyage
-
-- Retirer MDX, Netlify CMS, `netlify.toml`, `next export`.
-- Mettre a jour le README (n'est plus un template de blog).
-
-## 12. Risques et points ouverts
-
-- **Migration des 283 jeux** : donnees irregulieres (`X`, `(5)`), parsing a fiabiliser,
-  eventuellement completer manuellement apres coup.
-- **Champ image** : l'export Myludo ne fournit pas forcement d'URL d'image exploitable ;
-  a verifier / definir (upload manuel, ou pas d'image en v1).
-- **Normalisation des titres** pour le niveau 3 : editions, extensions, traductions ;
-  d'ou la validation humaine obligatoire.
-- **Ecran de consentement Google** en mode test : limite a 100 testeurs, suffisant ; a
-  basculer en production si ouverture plus large un jour.
-- **Choix format d'import Myludo** : le JSON est plus riche et structure que le CSV ;
-  privilegier le JSON, gerer le CSV en secours.
-```
+Liste et valeurs exactes a mettre sur l'hebergeur : voir [reference.md](reference.md).

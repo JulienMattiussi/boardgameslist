@@ -5,27 +5,21 @@ filtered, clean game lists - the one thing Myludo does not do. Board game data
 lives in a Google Sheet; the app reads it publicly and lets a small set of
 editors curate it.
 
-See [docs/plan-migration.md](docs/plan-migration.md) for the full product design,
-target architecture, data model, and phased migration plan, and
-[docs/session-state.md](docs/session-state.md) for the current status, live
-decisions, operational Google Sheets config, and next steps. Read both before any
-substantial work - session-state.md is the handoff journal and is kept current.
+See [docs/reference.md](docs/reference.md) for the operational reference (Google
+Cloud/Sheets config, env vars, sheet typing, decisions, gotchas) and
+[docs/plan-migration.md](docs/plan-migration.md) for the design (architecture,
+data model, import rules). Read reference.md before any operational work.
 
-**Sample-first**: do NOT migrate the full 283-game `.ods` yet. Work with a ~15-game
-sample (mostly from the Myludo JSON + one per `.ods` column), and only test the full
-283 import at the very end. See session-state.md section 5.
+## State
 
-## Current state vs target
+Next.js 16 (App Router, `src/app/`) + React 19 + TypeScript strict, Node 22.
+Google Sheet as DB. The migration is complete: public read (ISR), filterable
+catalog, printable list, editor auth (Auth.js/Google + allow-list), full editing
+(add/edit/delete via `/api/games` + a modal), and Myludo import (CSV/JSON/XLSX ->
+dedup cascade -> step-by-step review modal). The legacy MDX blog + Netlify CMS
+have been removed.
 
-- **Current**: Next.js 16 (App Router, `src/app/`) + React 19 + TypeScript strict,
-  Node 22. Google Sheet as DB. Done: public read (ISR), filterable catalog,
-  printable list, editor auth (Auth.js/Google + allow-list), and full editing
-  (add/edit/delete via `/api/games` + a modal). The legacy MDX blog + Netlify CMS
-  have been removed.
-- **Target (remaining)**: Myludo import (parse + dedup cascade + reconciliation),
-  then the full 283-game import. See the phased plan.
-
-Path alias: `@/*` maps to `src/*`. When in doubt about direction, follow the plan.
+Path alias: `@/*` maps to `src/*`.
 
 ## Data and auth rules (non-negotiable)
 
