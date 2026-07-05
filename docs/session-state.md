@@ -58,8 +58,22 @@ Phase 0 terminée + **gros bond technique le 2026-07-05** :
   Export PDF via la boîte d'impression du navigateur (pas de lib). La liste reflète
   les filtres/tri courants.
 
-**Prochaine étape** : déploiement Vercel, ou Phase 3 (auth éditeurs, bloquée par le
-setup OAuth Google). Voir section 8.
+- **Phase 3 (auth éditeurs) faite** : `next-auth@5` (Auth.js). `src/auth.ts` =
+  `trustHost: true` (sinon erreur `UntrustedHost` / "Server error" au callback en
+  local `next start` hors Vercel) + provider Google + callback `signIn` qui refuse
+  hors allow-list. `src/lib/editors.ts`
+  (`parseAllowlist`, `isEditor`) pur et testé. Route `src/app/api/auth/[...nextauth]`.
+  `Providers` (SessionProvider) + `AuthControl` (client, bouton "Espace editeur" /
+  déconnexion) dans le layout -> le catalogue `/` reste **statique (ISR)**, session
+  récupérée côté client. Flux OAuth vérifié (POST + CSRF -> redirection
+  accounts.google.com OK). Env (dans `.env.local`, gitignoré) :
+  `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `AUTH_SECRET`,
+  `EDITORS_ALLOWLIST` (julienm@marmelab.com, juliodeuxcoeurs@gmail.com).
+  Client OAuth Google créé sur le projet `board-game-list-501417` (mode Testing,
+  redirect URIs localhost:4210 + prod). À reporter sur Vercel au prochain déploiement.
+
+**Prochaine étape** : Phase 4 (édition des jeux : API route d'écriture via compte de
+service + UI CRUD gardée par l'auth + revalidation). Voir section 8.
 
 ## 2. Décisions actées (ne pas re-débattre)
 
@@ -231,15 +245,19 @@ séparateur de formule `;`) :
 4. ~~Phase 2 : listes imprimables filtrées.~~ FAIT 2026-07-05 (`PrintList` + print CSS).
 5. Déploiement Vercel (le site lecture seule + impression est prêt). <- PROCHAINE
    possible. Besoin : compte Vercel + clé de service en variable d'env.
-6. Suite selon [plan-migration.md](plan-migration.md) : auth éditeur (Phase 3,
-   bloquée par setup OAuth Google), édition (Phase 4), import Myludo (Phase 5).
-7. En toute fin : test d'import des 283 jeux du `.ods`.
+6. ~~Phase 3 : auth éditeurs (Auth.js + Google + allow-list).~~ FAIT 2026-07-05.
+7. Phase 4 : édition des jeux dans l'app (API route d'écriture compte de service +
+   UI CRUD gardée par l'auth + revalidation à la demande). <- PROCHAINE.
+8. Phase 5 : import Myludo (parsing + dédoublonnage cascade + réconciliation).
+9. En toute fin : test d'import des 283 jeux du `.ods`.
 
 Idées d'affichage intermédiaires possibles avant/pendant Phase 2 : tri, recherche,
 fiche jeu détaillée, déploiement Vercel (le repo est déjà prévu pour).
 
 ## 9. Ce qui reste à obtenir de l'utilisateur
 
-- Setup du **client OAuth Google** (pour Auth.js) : pas encore fait. Nécessaire à
-  la phase Auth éditeurs, pas avant.
+- ~~Setup du client OAuth Google (pour Auth.js).~~ FAIT 2026-07-05 (client Web créé,
+  credentials dans `.env.local`). Reste à reporter les variables d'env sur Vercel
+  au prochain déploiement, et à ajouter les redirect URIs de prod si le domaine
+  change.
 - ~~Confirmer l'échantillon proposé.~~ Confirmé et écrit (section 8).

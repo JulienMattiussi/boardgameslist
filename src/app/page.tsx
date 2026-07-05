@@ -1,5 +1,6 @@
 import { fetchGames } from "@/lib/games";
 import { Catalog } from "@/components/Catalog";
+import { AuthControl } from "@/components/AuthControl";
 import { Logo } from "@/components/icons";
 import config from "@/lib/config";
 import styles from "./page.module.css";
@@ -15,6 +16,9 @@ export default async function HomePage() {
         <div className={styles.brand}>
           <Logo className={styles.logo} />
           <h1 className={styles.title}>{config.site_title}</h1>
+          <div className={styles.auth}>
+            <AuthControl />
+          </div>
         </div>
       </header>
       <Catalog games={games} />

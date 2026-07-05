@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Fraunces } from "next/font/google";
+import { Providers } from "@/components/Providers";
 import config from "@/lib/config";
 import "./globals.css";
 
@@ -28,7 +29,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={`${inter.variable} ${fraunces.variable}`}>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

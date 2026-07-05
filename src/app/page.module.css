@@ -24,6 +24,10 @@
   gap: 1.1rem;
 }
 
+.auth {
+  margin-left: auto;
+}
+
 .logo {
   flex-shrink: 0;
   font-size: 3.4rem;
