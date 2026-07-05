@@ -1,11 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Game } from "@/lib/games";
 import { filterGames, sortGames, SortKey, GameKind } from "@/lib/filter";
 import { GameList } from "./GameList";
 import { PrintList } from "./PrintList";
-import { SearchIcon, PlayersIcon, ClockIcon, PrinterIcon } from "./icons";
+import { GameFormModal } from "./GameFormModal";
+import {
+  SearchIcon,
+  PlayersIcon,
+  ClockIcon,
+  PrinterIcon,
+  PlusIcon,
+} from "./icons";
 import styles from "./Catalog.module.css";
 
 type Props = {
@@ -35,11 +44,30 @@ const KIND_OPTIONS: { value: "" | GameKind; label: string }[] = [
 ];
 
 export function Catalog({ games }: Props) {
+  const router = useRouter();
+  const { data: session } = useSession();
+  const canEdit = Boolean(session?.user);
+
   const [query, setQuery] = useState("");
   const [players, setPlayers] = useState<number | null>(null);
   const [durationKey, setDurationKey] = useState<string | null>(null);
   const [kind, setKind] = useState<"" | GameKind>("");
   const [sort, setSort] = useState<SortKey>("titre");
+  const [editGame, setEditGame] = useState<Game | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const openCreate = () => {
+    setEditGame(null);
+    setModalOpen(true);
+  };
+  const openEdit = (game: Game) => {
+    setEditGame(game);
+    setModalOpen(true);
+  };
+  const onSaved = () => {
+    setModalOpen(false);
+    router.refresh();
+  };
 
   const visible = useMemo(() => {
     const bucket = DURATION_OPTIONS.find((option) => option.key === durationKey);
@@ -175,22 +203,43 @@ export function Catalog({ games }: Props) {
         <p className={styles.count}>
           {visible.length} {visible.length > 1 ? "jeux" : "jeu"}
         </p>
-        <button
-          type="button"
-          className={styles.printButton}
-          onClick={() => window.print()}
-          title="Imprimer la liste"
-          aria-label="Imprimer la liste"
-        >
-          <PrinterIcon className={styles.printIcon} />
-        </button>
+        <div className={styles.actionButtons}>
+          {canEdit && (
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={openCreate}
+              title="Ajouter un jeu"
+              aria-label="Ajouter un jeu"
+            >
+              <PlusIcon className={styles.printIcon} />
+            </button>
+          )}
+          <button
+            type="button"
+            className={styles.iconButton}
+            onClick={() => window.print()}
+            title="Imprimer la liste"
+            aria-label="Imprimer la liste"
+          >
+            <PrinterIcon className={styles.printIcon} />
+          </button>
+        </div>
       </div>
 
       <div className={styles.screenList}>
-        <GameList games={visible} />
+        <GameList games={visible} onEdit={canEdit ? openEdit : undefined} />
       </div>
 
       <PrintList games={visible} summary={summary} />
+
+      {modalOpen && (
+        <GameFormModal
+          game={editGame}
+          onClose={() => setModalOpen(false)}
+          onSaved={onSaved}
+        />
+      )}
     </section>
   );
 }

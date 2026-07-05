@@ -72,8 +72,37 @@ Phase 0 terminée + **gros bond technique le 2026-07-05** :
   Client OAuth Google créé sur le projet `board-game-list-501417` (mode Testing,
   redirect URIs localhost:4210 + prod). À reporter sur Vercel au prochain déploiement.
 
-**Prochaine étape** : Phase 4 (édition des jeux : API route d'écriture via compte de
-service + UI CRUD gardée par l'auth + revalidation). Voir section 8.
+- **Phase 4 (édition) - fondation faite** (UI encore à faire) :
+  - `src/lib/sheets.ts` : `appendGameRow` / `updateGameRow` via compte de service
+    (scope `spreadsheets` en écriture, `spreadsheets.readonly` en lecture), RAW.
+  - `src/lib/games.ts` : `gameToRow` (Game -> ligne typée : nombres en nombres,
+    listes jointes par `; `, date ISO -> n° de série), `normalizeGame` (coercition
+    d'un payload JSON non fiable), `rowIndex` sur `Game` (ligne du Sheet, pour cibler
+    l'update). `edition` est passé en `number | null` (colonne typée nombre). Testés.
+  - `src/app/api/games/route.ts` : `POST` (création -> append) et `PUT` (édition ->
+    update par `rowIndex`), **gardés serveur par `auth()` + allow-list** (401 sinon),
+    `revalidatePath("/")` après écriture. Reads publics inchangés.
+  - Vérifié : build OK, 30 tests, POST/PUT non authentifiés -> 401, écriture réelle
+    typée (append + relecture + delete) OK.
+- **Phase 4 - UI faite** : `GameFormModal.tsx` (modale large 960px, formulaire
+  partagé création/édition, POST/PUT vers `/api/games`, puis `router.refresh()`).
+  Boutons **icône + tooltip** gardés par la session (`useSession` dans `Catalog`) :
+  `+` "Ajouter un jeu", crayon "Modifier" sur chaque `GameCard`. Déconnecté : aucun
+  bouton éditeur (SSR vérifié). Édition ciblée via `rowIndex`.
+  - **Suppression** : endpoint `DELETE /api/games` (`deleteGameRow`, gardé auth) +
+    bouton corbeille rouge dans la modale (édition seulement) + modale de confirmation
+    (titre en gras).
+  - **Champs non éditables** (read-only, grisés) : `source`, `note_moyenne` (vient de
+    Myludo), `myludo_id`.
+  - **Autocomplete** (`TagAutocomplete.tsx`, multi-valeurs `; `) sur `categories`,
+    `themes`, `editeur`, alimenté par `src/lib/taxonomies.ts` (listes CATEGORIES /
+    THEMES / EDITEURS générées depuis `collection.json`).
+  - **Layout compact** : joueurs à droite du titre, durée à droite du sous-titre ;
+    demi-champs regroupés 2 par case pour gagner de la place (joueurs min/max,
+    durée min/max, notes perso/moyenne, edition/age, date/myludo_id).
+
+**Prochaine étape** : Phase 5 (import Myludo) ou suppression de jeu / affinages UI.
+Voir section 8.
 
 ## 2. Décisions actées (ne pas re-débattre)
 
@@ -246,9 +275,9 @@ séparateur de formule `;`) :
 5. Déploiement Vercel (le site lecture seule + impression est prêt). <- PROCHAINE
    possible. Besoin : compte Vercel + clé de service en variable d'env.
 6. ~~Phase 3 : auth éditeurs (Auth.js + Google + allow-list).~~ FAIT 2026-07-05.
-7. Phase 4 : édition des jeux dans l'app (API route d'écriture compte de service +
-   UI CRUD gardée par l'auth + revalidation à la demande). <- PROCHAINE.
-8. Phase 5 : import Myludo (parsing + dédoublonnage cascade + réconciliation).
+7. ~~Phase 4 : édition des jeux (API + modale formulaire ajout/édition).~~ FAIT
+   2026-07-05. (Suppression de jeu pas encore faite : à ajouter si besoin.)
+8. Phase 5 : import Myludo (parsing + dédoublonnage cascade + réconciliation). <- PROCHAINE.
 9. En toute fin : test d'import des 283 jeux du `.ods`.
 
 Idées d'affichage intermédiaires possibles avant/pendant Phase 2 : tri, recherche,

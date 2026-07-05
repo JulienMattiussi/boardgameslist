@@ -5,7 +5,7 @@ export type Game = {
   ean: string[];
   titre: string;
   sousTitre: string;
-  edition: string;
+  edition: number | null;
   joueursMin: number | null;
   joueursMax: number | null;
   dureeMin: number | null;
@@ -23,9 +23,10 @@ export type Game = {
   image: string;
   source: string;
   description: string;
+  rowIndex: number;
 };
 
-type FieldKind = "string" | "number" | "list";
+type FieldKind = "string" | "number" | "list" | "date";
 
 type GameValue = string | string[] | number | null;
 
@@ -40,7 +41,7 @@ const COLUMNS: ColumnSpec[] = [
   { header: "european_article_number", key: "ean", kind: "list" },
   { header: "titre", key: "titre", kind: "string" },
   { header: "sous_titre", key: "sousTitre", kind: "string" },
-  { header: "edition", key: "edition", kind: "string" },
+  { header: "edition", key: "edition", kind: "number" },
   { header: "joueurs_min", key: "joueursMin", kind: "number" },
   { header: "joueurs_max", key: "joueursMax", kind: "number" },
   { header: "duree_min", key: "dureeMin", kind: "number" },
@@ -53,7 +54,7 @@ const COLUMNS: ColumnSpec[] = [
   { header: "auteurs", key: "auteurs", kind: "list" },
   { header: "note_perso", key: "notePerso", kind: "number" },
   { header: "note_moyenne", key: "noteMoyenne", kind: "number" },
-  { header: "date_acquisition", key: "dateAcquisition", kind: "string" },
+  { header: "date_acquisition", key: "dateAcquisition", kind: "date" },
   { header: "emplacement", key: "emplacement", kind: "string" },
   { header: "image", key: "image", kind: "string" },
   { header: "source", key: "source", kind: "string" },
@@ -107,9 +108,10 @@ export function rowsToGames(rows: string[][]): Game[] {
   });
 
   return dataRows
-    .filter((row) => row.some((cell) => cell.trim() !== ""))
-    .map((row) => {
-      const game = {} as Record<keyof Game, GameValue>;
+    .map((row, index) => ({ row, rowIndex: index + 2 }))
+    .filter(({ row }) => row.some((cell) => cell.trim() !== ""))
+    .map(({ row, rowIndex }) => {
+      const game: Record<string, GameValue | number> = { rowIndex };
       for (const column of COLUMNS) {
         const index = indexByHeader.get(column.header);
         const raw = index === undefined ? undefined : row[index];
@@ -120,6 +122,74 @@ export function rowsToGames(rows: string[][]): Game[] {
       }
       return game as unknown as Game;
     });
+}
+
+function isoDateToSerial(iso: string): number | "" {
+  const match = iso.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    return "";
+  }
+  const utc = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return Math.round((utc - Date.UTC(1899, 11, 30)) / 86400000);
+}
+
+function coerceNumber(value: unknown): number | null {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === "string") {
+    return parseNumber(value);
+  }
+  return null;
+}
+
+function coerceString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function coerceList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item).trim())
+      .filter((item) => item !== "");
+  }
+  if (typeof value === "string") {
+    return parseList(value);
+  }
+  return [];
+}
+
+export function normalizeGame(input: Record<string, unknown>): Game {
+  const game: Record<string, GameValue | number> = {
+    rowIndex: typeof input.rowIndex === "number" ? input.rowIndex : 0,
+  };
+  for (const column of COLUMNS) {
+    const value = input[column.key];
+    if (column.kind === "number") {
+      game[column.key] = coerceNumber(value);
+    } else if (column.kind === "list") {
+      game[column.key] = coerceList(value);
+    } else {
+      game[column.key] = coerceString(value);
+    }
+  }
+  return game as unknown as Game;
+}
+
+export function gameToRow(game: Game): (string | number)[] {
+  return COLUMNS.map((column) => {
+    const value = game[column.key];
+    if (column.kind === "number") {
+      return typeof value === "number" ? value : "";
+    }
+    if (column.kind === "date") {
+      return typeof value === "string" ? isoDateToSerial(value) : "";
+    }
+    if (column.kind === "list") {
+      return Array.isArray(value) ? value.join("; ") : "";
+    }
+    return typeof value === "string" ? value : "";
+  });
 }
 
 export async function fetchGames(): Promise<Game[]> {

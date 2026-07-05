@@ -15,6 +15,10 @@
   --color-rating-mid: #b7791f;
   --color-rating-low: #b04a3a;
 
+  --color-danger: #c0392b;
+  --color-danger-soft: #fbeae7;
+  --color-danger-contrast: #ffffff;
+
   --radius: 10px;
   --radius-lg: 16px;
   --shadow-sm: 0 1px 2px rgb(20 30 28 / 0.06);
@@ -39,6 +43,10 @@
     --color-rating-high: #4ade80;
     --color-rating-mid: #e0b45c;
     --color-rating-low: #e08974;
+
+    --color-danger: #e06754;
+    --color-danger-soft: #3a201c;
+    --color-danger-contrast: #1a0f0d;
 
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow-lg: 0 18px 40px -18px rgb(0 0 0 / 0.7);

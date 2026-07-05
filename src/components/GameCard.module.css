@@ -42,6 +42,7 @@
 .bannerText {
   position: relative;
   z-index: 1;
+  padding-right: 2.2rem;
 }
 
 .title {
@@ -75,6 +76,32 @@
   font-weight: 650;
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
+  z-index: 2;
+}
+
+.edit {
+  position: absolute;
+  top: 2.5rem;
+  right: 0.6rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  font-size: 0.95rem;
+  color: var(--color-fg);
+  background: var(--color-surface);
+  border: none;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+
+.edit:hover {
+  opacity: 1;
 }
 
 .star {

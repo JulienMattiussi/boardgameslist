@@ -15,7 +15,7 @@ function makeGame(overrides: Partial<Game>): Game {
     ean: [],
     titre: "",
     sousTitre: "",
-    edition: "",
+    edition: null,
     joueursMin: null,
     joueursMax: null,
     dureeMin: null,
@@ -33,6 +33,7 @@ function makeGame(overrides: Partial<Game>): Game {
     image: "",
     source: "manuel",
     description: "",
+    rowIndex: 0,
     ...overrides,
   };
 }

@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-import { rowsToGames, Game } from "../games";
+import { rowsToGames, gameToRow, normalizeGame, Game } from "../games";
 
 const HEADER = [
   "MYLUDO_ID",
@@ -118,4 +118,81 @@ test("resolves columns by header, not position, and tolerates reordering", () =>
 
 test("returns an empty array when there are no rows", () => {
   expect(rowsToGames([])).toEqual([]);
+});
+
+test("rowIndex maps to the 1-based sheet row", () => {
+  const games = rowsToGames([
+    ["TITRE"],
+    ["Alpha"],
+    ["Beta"],
+  ]);
+  expect(games.map((g) => [g.titre, g.rowIndex])).toEqual([
+    ["Alpha", 2],
+    ["Beta", 3],
+  ]);
+});
+
+test("gameToRow serializes a game into typed cells in column order", () => {
+  const [game] = rowsToGames([
+    HEADER,
+    [
+      "75231",
+      "3770024165050",
+      "2 Pommes 3 Pains",
+      "",
+      "2024",
+      "2",
+      "6",
+      "15",
+      "30",
+      "8+",
+      "Jeu de Cartes",
+      "Alimentation",
+      "Rapidité",
+      "Prétexte",
+      "Clément Gustave; Tommy Paupe",
+      "",
+      "6.6",
+      "2025-09-28",
+      "",
+      "",
+      "myludo",
+    ],
+  ]);
+  const row = gameToRow(game);
+  expect(row[0]).toBe("75231");
+  expect(row[2]).toBe("2 Pommes 3 Pains");
+  expect(row[4]).toBe(2024);
+  expect(row[5]).toBe(2);
+  expect(row[6]).toBe(6);
+  expect(row[14]).toBe("Clément Gustave; Tommy Paupe");
+  expect(row[15]).toBe("");
+  expect(row[16]).toBe(6.6);
+  expect(row[17]).toBe(45928);
+  expect(row[20]).toBe("myludo");
+});
+
+test("normalizeGame coerces untrusted input into a valid Game", () => {
+  const game = normalizeGame({
+    titre: "  Concept  ",
+    joueursMin: "4",
+    joueursMax: 12,
+    dureeMin: "",
+    noteMoyenne: "7.2",
+    categories: ["Jeu", " ", "Ambiance "],
+    editeur: "Repos; Asmodee",
+    source: "manuel",
+    rowIndex: 16,
+    junk: "ignored",
+  });
+  expect(game.titre).toBe("Concept");
+  expect(game.joueursMin).toBe(4);
+  expect(game.joueursMax).toBe(12);
+  expect(game.dureeMin).toBeNull();
+  expect(game.noteMoyenne).toBe(7.2);
+  expect(game.categories).toEqual(["Jeu", "Ambiance"]);
+  expect(game.editeur).toEqual(["Repos", "Asmodee"]);
+  expect(game.source).toBe("manuel");
+  expect(game.rowIndex).toBe(16);
+  expect((game as unknown as Record<string, unknown>).junk).toBeUndefined();
 });

@@ -1,13 +1,14 @@
 import { Game } from "@/lib/games";
 import { formatRange, hueFromString, ratingLevel } from "@/lib/format";
-import { PlayersIcon, ClockIcon, AgeIcon, StarIcon } from "./icons";
+import { PlayersIcon, ClockIcon, AgeIcon, StarIcon, EditIcon } from "./icons";
 import styles from "./GameCard.module.css";
 
 type Props = {
   game: Game;
+  onEdit?: (game: Game) => void;
 };
 
-export function GameCard({ game }: Props) {
+export function GameCard({ game, onEdit }: Props) {
   const players = formatRange(game.joueursMin, game.joueursMax);
   const duration = formatRange(game.dureeMin, game.dureeMax);
   const rating = ratingLevel(game.noteMoyenne);
@@ -19,6 +20,17 @@ export function GameCard({ game }: Props) {
       style={{ "--card-hue": hue } as React.CSSProperties}
     >
       <div className={styles.banner}>
+        {onEdit && (
+          <button
+            type="button"
+            className={styles.edit}
+            onClick={() => onEdit(game)}
+            title="Modifier"
+            aria-label="Modifier"
+          >
+            <EditIcon />
+          </button>
+        )}
         {rating && game.noteMoyenne !== null && (
           <span className={`${styles.rating} ${styles[rating]}`}>
             <StarIcon className={styles.star} />

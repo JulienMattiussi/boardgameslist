@@ -4,9 +4,10 @@ import styles from "./GameList.module.css";
 
 type Props = {
   games: Game[];
+  onEdit?: (game: Game) => void;
 };
 
-export function GameList({ games }: Props) {
+export function GameList({ games, onEdit }: Props) {
   if (games.length === 0) {
     return (
       <p className={styles.empty}>Aucun jeu ne correspond a cette recherche.</p>
@@ -15,7 +16,11 @@ export function GameList({ games }: Props) {
   return (
     <div className={styles.grid}>
       {games.map((game) => (
-        <GameCard key={game.myludoId || game.titre} game={game} />
+        <GameCard
+          key={game.myludoId || game.titre}
+          game={game}
+          onEdit={onEdit}
+        />
       ))}
     </div>
   );

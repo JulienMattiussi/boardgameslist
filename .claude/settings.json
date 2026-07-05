@@ -27,7 +27,8 @@
       "Bash(npx jest:*)",
       "Bash(npx tsc:*)",
       "Bash(npx next:*)",
-      "Bash(curl -s http://localhost:*)"
+      "Bash(curl -s http://localhost:*)",
+      "Bash(yarn test *)"
     ]
   },
   "hooks": {

@@ -137,7 +137,12 @@
   color: var(--color-muted);
 }
 
-.printButton {
+.actionButtons {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.iconButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -151,7 +156,7 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.printButton:hover {
+.iconButton:hover {
   color: var(--color-accent-contrast);
   background: var(--color-accent);
 }

@@ -80,6 +80,19 @@ command (`zsh: no matches found`), unlike bash. Quote any glob meant for the too
 - `grep -rn ... --include='*.ts'` (not `--include=*.ts`)
 - `find . -name '*.tsx'` (don't pass `dir/*.tsx` as an argument)
 
+**Do not prefix commands with `cd`.** The shell cwd is already the project root and
+persists between calls, so `cd` is redundant; it also breaks permission matching
+(a command starting with `cd` no longer matches the `Bash(yarn:*)` etc. allow-rules,
+triggering a prompt) and `Bash(cd:*)` is intentionally NOT allowed (it could leave
+the project). Run tools directly (`yarn test`), and use absolute paths for anything
+outside the project (e.g. scratchpad scripts).
+
+**Never touch port 4210 for ad-hoc checks.** 4210 is the user's dev server
+(`make start`). For throwaway `next start` / `next dev` verifications, use a
+different port (`yarn start -p 4399`) and only ever kill THAT port
+(`fuser -k 4399/tcp`). Do not run `fuser -k 4210/tcp` or `pkill -f next` - it kills
+the user's running dev server.
+
 ## Commands
 
 ```bash
