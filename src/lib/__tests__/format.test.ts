@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-import { formatRange } from "../format";
+import { formatRange, hueFromString, ratingLevel } from "../format";
 
 test("formats a min-max range", () => {
   expect(formatRange(2, 6)).toBe("2-6");
@@ -20,4 +20,19 @@ test("renders a max-only range as the max value", () => {
 
 test("returns an empty string when both bounds are missing", () => {
   expect(formatRange(null, null)).toBe("");
+});
+
+test("hueFromString is deterministic and within 0-359", () => {
+  const hue = hueFromString("Citadelles");
+  expect(hue).toBe(hueFromString("Citadelles"));
+  expect(hue).toBeGreaterThanOrEqual(0);
+  expect(hue).toBeLessThan(360);
+  expect(hueFromString("Citadelles")).not.toBe(hueFromString("Stellar"));
+});
+
+test("ratingLevel buckets notes and handles null", () => {
+  expect(ratingLevel(7.8)).toBe("high");
+  expect(ratingLevel(6.6)).toBe("mid");
+  expect(ratingLevel(4)).toBe("low");
+  expect(ratingLevel(null)).toBeNull();
 });

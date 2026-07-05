@@ -27,10 +27,24 @@ Phase 0 terminée + **gros bond technique le 2026-07-05** :
   - `src/lib/games.ts` : type `Game` + `rowsToGames` (mapping en-tête->clé,
     parsing nombres/listes) + `fetchGames`. Fonctions pures testées.
   - `src/lib/format.ts` : `formatRange` (affichage plages), testé.
-  - `src/app/` : `layout.tsx`, `page.tsx` (ISR `revalidate = 3600`), `globals.css`
-    (thème en custom properties), `src/components/GameList.tsx`.
+  - `src/app/` : `layout.tsx` (polices self-hosted via `next/font` : Inter + Fraunces),
+    `page.tsx` (ISR `revalidate = 3600`, hero + `Catalog`), `globals.css` (thème
+    clair/sombre en custom properties + styles `@media print` de base).
   - Vérifié bout-en-bout : `yarn build` OK (page prérendue depuis le Sheet live),
     serveur prod -> HTTP 200 affichant les 16 jeux.
+- **Affichage enrichi (magnifique)** :
+  - `src/lib/filter.ts` : `filterGames` (recherche accent-insensible + filtre nombre
+    de joueurs + filtre durée par tranche), `sortGames` (titre / note / durée / âge
+    mini). Fonctions pures testées.
+  - Logo meeple + dé : `src/app/icon.svg` (favicon) + `Logo` dans `icons.tsx` (hero).
+    Filtres joueurs/durée symétriques, label = icône (tooltip). Pas de sous-titre.
+  - `src/lib/format.ts` : ajout `hueFromString` (teinte déterministe pour la vignette)
+    et `ratingLevel` (haut/moyen/bas). Testés.
+  - `src/components/` : `Catalog.tsx` (client : recherche + chips joueurs + tri),
+    `GameList.tsx` (grille + état vide), `GameCard.tsx` (titre + sous-titre posés sur
+    un bandeau dégradé déterministe pour compacité, badge de note coloré, méta à
+    icônes, pastilles catégories, crédits), `icons.tsx` (SVG inline). Total tests :
+    22 verts.
 
 **Prochaine étape** : Phase 2 (listes imprimables filtrées) ou enrichir l'affichage
 (fiche jeu, tri/recherche). Voir section 8.
