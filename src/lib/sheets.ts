@@ -27,6 +27,9 @@ export async function readSheetRows(): Promise<string[][]> {
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId,
     range: SHEET_NAME,
+    // Typed cells: numbers come back as numbers (locale-proof), dates as ISO strings.
+    valueRenderOption: "UNFORMATTED_VALUE",
+    dateTimeRenderOption: "FORMATTED_STRING",
   });
   const values = res.data.values ?? [];
   return values.map((row) => row.map((cell) => (cell == null ? "" : String(cell))));

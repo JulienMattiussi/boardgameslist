@@ -128,6 +128,17 @@
   font-size: 0.78rem;
 }
 
+.description {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--color-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .tags {
   display: flex;
   flex-wrap: wrap;

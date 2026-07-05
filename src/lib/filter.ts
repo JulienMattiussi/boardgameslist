@@ -2,6 +2,8 @@ import { Game } from "./games";
 
 export type SortKey = "titre" | "note" | "duree" | "age";
 
+export type GameKind = "societe" | "enigme";
+
 export type DurationBucket = {
   min: number;
   max: number;
@@ -11,7 +13,17 @@ export type Filters = {
   query: string;
   players: number | null;
   duration: DurationBucket | null;
+  kind: GameKind | null;
 };
+
+const ENIGMA_KEYWORDS = [
+  "enquete",
+  "enigme",
+  "escape",
+  "puzzle",
+  "mystere",
+  "livre dont",
+];
 
 function normalize(value: string): string {
   return value
@@ -33,9 +45,19 @@ export function matchesQuery(game: Game, query: string): boolean {
       game.auteurs.join(" "),
       game.categories.join(" "),
       game.themes.join(" "),
+      game.description,
     ].join(" ")
   );
   return haystack.includes(q);
+}
+
+export function gameKind(game: Game): GameKind {
+  const haystack = normalize(
+    [...game.categories, ...game.themes].join(" ")
+  );
+  return ENIGMA_KEYWORDS.some((keyword) => haystack.includes(keyword))
+    ? "enigme"
+    : "societe";
 }
 
 export function gameSupportsPlayers(game: Game, count: number): boolean {
@@ -63,7 +85,8 @@ export function filterGames(games: Game[], filters: Filters): Game[] {
     (game) =>
       matchesQuery(game, filters.query) &&
       (filters.players === null || gameSupportsPlayers(game, filters.players)) &&
-      (filters.duration === null || gameInDuration(game, filters.duration))
+      (filters.duration === null || gameInDuration(game, filters.duration)) &&
+      (filters.kind === null || gameKind(game) === filters.kind)
   );
 }
 

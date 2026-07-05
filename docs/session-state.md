@@ -33,11 +33,14 @@ Phase 0 terminée + **gros bond technique le 2026-07-05** :
   - Vérifié bout-en-bout : `yarn build` OK (page prérendue depuis le Sheet live),
     serveur prod -> HTTP 200 affichant les 16 jeux.
 - **Affichage enrichi (magnifique)** :
-  - `src/lib/filter.ts` : `filterGames` (recherche accent-insensible + filtre nombre
-    de joueurs + filtre durée par tranche), `sortGames` (titre / note / durée / âge
-    mini). Fonctions pures testées.
-  - Logo meeple + dé : `src/app/icon.svg` (favicon) + `Logo` dans `icons.tsx` (hero).
-    Filtres joueurs/durée symétriques, label = icône (tooltip). Pas de sous-titre.
+  - `src/lib/filter.ts` : `filterGames` (recherche accent-insensible incluant la
+    description + filtre nombre de joueurs + filtre durée par tranche + filtre type
+    société/énigme via `gameKind`), `sortGames` (titre / note / durée / âge mini).
+    Fonctions pures testées (25 tests).
+  - `GameCard` affiche la description (clamp 3 lignes). Logo meeple + dé :
+    `src/app/icon.svg` (favicon) + `Logo` dans `icons.tsx` (hero, centré sur le
+    titre). Eyebrow "board game list", pas de sous-titre. Filtres joueurs/durée
+    symétriques, label = icône ronde (tooltip). Toolbar : recherche + type + tri.
   - `src/lib/format.ts` : ajout `hueFromString` (teinte déterministe pour la vignette)
     et `ratingLevel` (haut/moyen/bas). Testés.
   - `src/components/` : `Catalog.tsx` (client : recherche + chips joueurs + tri),
@@ -109,7 +112,11 @@ Ordre des colonnes (voir section 5 de [plan-migration.md](plan-migration.md)) :
 `myludo_id`, `ean`, `titre`, `sous_titre`, `edition`, `joueurs_min`, `joueurs_max`,
 `duree_min`, `duree_max`, `age`, `categories`, `themes`, `mecanismes`, `editeur`,
 `auteurs`, `note_perso`, `note_moyenne`, `date_acquisition`, `emplacement`,
-`image`, `source`
+`image`, `source`, `description`
+
+`description` (colonne V) ajoutée le 2026-07-05 (absente de l'export Myludo).
+Test : la description de Paléo a été reprise du commentaire de l'onglet "gros jeux"
+du `.ods` source. À remplir à la main ou depuis une autre source par la suite.
 
 **Casse dans le Sheet** : la ligne d'en-tête est écrite EN MAJUSCULES
 (`MYLUDO_ID`, `TITRE`, ...). La clé machine reste le snake_case ci-dessus ; le code
@@ -176,9 +183,24 @@ testées lors de la phase import Myludo (elles ne sont PAS encore du code `src/`
   table de mots connus (`duo` -> 2).
 - Multi-valeurs (categories, themes, mecanismes, editeur, auteurs) : séparateur
   `; ` (point-virgule + espace). `ean` : séparateur `;` sans espace.
-- Tout écrit en texte brut (valueInputOption RAW) pour éviter tout reformatage
-  auto de Sheets (EAN à 13 chiffres, dates ISO).
 - `note` (perso/moyenne) à `0` -> vide. `image` : vide (absent du JSON Myludo).
+
+### Typage des cellules du Sheet (2026-07-05)
+
+Pour limiter les erreurs de saisie manuelle, les colonnes typables ont été
+converties en vraies valeurs (plus en texte) + format + validation (locale fr_FR,
+séparateur de formule `;`) :
+
+- `edition`, `joueurs_min/max`, `duree_min/max` : **entiers** (format `0`,
+  validation `=OR(X="";AND(ISNUMBER(X);X=INT(X)))`).
+- `note_perso`, `note_moyenne` : **décimal** (format `0.0`, validation `ISNUMBER`).
+- `date_acquisition` : **date** (format `yyyy-mm-dd`, stockée en n° de série).
+- `source` : **liste déroulante** `myludo` / `manuel` (ONE_OF_LIST, strict).
+- `ean`, titres, catégories... restent du texte.
+- **Conséquence lecture** : `sheets.ts` lit en `valueRenderOption=UNFORMATTED_VALUE`
+  + `dateTimeRenderOption=FORMATTED_STRING`. Les nombres reviennent en nombres
+  (insensible à la locale, pas de `6,6`), les dates en ISO. NE PAS relire en
+  FORMATTED_VALUE puis réécrire (le `6,6` fr casserait le parse).
 
 ## 7. Config Claude déjà en place
 

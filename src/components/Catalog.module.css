@@ -7,7 +7,8 @@
 
 .search {
   position: relative;
-  flex: 1 1 320px;
+  flex: 1 1 200px;
+  min-width: 160px;
   display: flex;
   align-items: center;
 }
@@ -41,6 +42,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  margin-left: 1.25rem;
 }
 
 .sortLabel {
@@ -48,7 +50,7 @@
   color: var(--color-muted);
 }
 
-.sortSelect {
+.select {
   padding: 0.6rem 0.9rem;
   font: inherit;
   color: var(--color-fg);
@@ -58,7 +60,7 @@
   cursor: pointer;
 }
 
-.sortSelect:focus {
+.select:focus {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px var(--color-accent-soft);

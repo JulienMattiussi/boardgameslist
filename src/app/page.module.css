@@ -5,10 +5,13 @@
 }
 
 .hero {
+  margin-bottom: 2.5rem;
+}
+
+.brand {
   display: flex;
   align-items: center;
   gap: 1.1rem;
-  margin-bottom: 2.5rem;
 }
 
 .logo {

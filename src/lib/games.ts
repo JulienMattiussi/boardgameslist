@@ -22,6 +22,7 @@ export type Game = {
   emplacement: string;
   image: string;
   source: string;
+  description: string;
 };
 
 type FieldKind = "string" | "number" | "list";
@@ -56,6 +57,7 @@ const COLUMNS: ColumnSpec[] = [
   { header: "emplacement", key: "emplacement", kind: "string" },
   { header: "image", key: "image", kind: "string" },
   { header: "source", key: "source", kind: "string" },
+  { header: "description", key: "description", kind: "string" },
 ];
 
 function parseNumber(raw: string): number | null {

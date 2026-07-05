@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Game } from "@/lib/games";
-import { filterGames, sortGames, SortKey } from "@/lib/filter";
+import { filterGames, sortGames, SortKey, GameKind } from "@/lib/filter";
 import { GameList } from "./GameList";
 import { SearchIcon, PlayersIcon, ClockIcon } from "./icons";
 import styles from "./Catalog.module.css";
@@ -27,10 +27,17 @@ const SORT_LABELS: Record<SortKey, string> = {
   age: "Age minimum",
 };
 
+const KIND_OPTIONS: { value: "" | GameKind; label: string }[] = [
+  { value: "", label: "Tous les types" },
+  { value: "societe", label: "Jeu de societe" },
+  { value: "enigme", label: "Enigme / Enquete" },
+];
+
 export function Catalog({ games }: Props) {
   const [query, setQuery] = useState("");
   const [players, setPlayers] = useState<number | null>(null);
   const [durationKey, setDurationKey] = useState<string | null>(null);
+  const [kind, setKind] = useState<"" | GameKind>("");
   const [sort, setSort] = useState<SortKey>("titre");
 
   const visible = useMemo(() => {
@@ -40,10 +47,11 @@ export function Catalog({ games }: Props) {
         query,
         players,
         duration: bucket ? { min: bucket.min, max: bucket.max } : null,
+        kind: kind === "" ? null : kind,
       }),
       sort
     );
-  }, [games, query, players, durationKey, sort]);
+  }, [games, query, players, durationKey, kind, sort]);
 
   return (
     <section>
@@ -60,10 +68,23 @@ export function Catalog({ games }: Props) {
           />
         </div>
 
+        <select
+          className={styles.select}
+          value={kind}
+          onChange={(event) => setKind(event.target.value as "" | GameKind)}
+          aria-label="Type de jeu"
+        >
+          {KIND_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
         <label className={styles.sort}>
           <span className={styles.sortLabel}>Trier par</span>
           <select
-            className={styles.sortSelect}
+            className={styles.select}
             value={sort}
             onChange={(event) => setSort(event.target.value as SortKey)}
           >

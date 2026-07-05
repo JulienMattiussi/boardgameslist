@@ -58,6 +58,10 @@ export function GameCard({ game }: Props) {
           )}
         </dl>
 
+        {game.description && (
+          <p className={styles.description}>{game.description}</p>
+        )}
+
         {game.categories.length > 0 && (
           <ul className={styles.tags}>
             {game.categories.map((category) => (

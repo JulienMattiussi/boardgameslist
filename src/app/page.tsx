@@ -11,9 +11,9 @@ export default async function HomePage() {
   return (
     <main className={styles.main}>
       <header className={styles.hero}>
-        <Logo className={styles.logo} />
-        <div>
-          <p className={styles.eyebrow}>Ludotheque</p>
+        <p className={styles.eyebrow}>board game list</p>
+        <div className={styles.brand}>
+          <Logo className={styles.logo} />
           <h1 className={styles.title}>{config.site_title}</h1>
         </div>
       </header>
