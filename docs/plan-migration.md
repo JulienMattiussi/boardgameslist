@@ -1,7 +1,15 @@
 # Plan de conception et de migration - boardgameslist
 
-> Statut : proposition validée en conception, non encore implémentée.
-> Dernière mise à jour : 2026-07-04.
+> Statut : Phases 0 et 1 implémentées. Dernière mise à jour : 2026-07-05.
+>
+> **Écarts actés vs conception initiale (2026-07-05) :**
+> - **App Router** (et non Pages Router) : la stack est passée à Next 16 + React 19.
+>   Les mentions `getStaticProps`/`revalidate` ci-dessous se traduisent en App Router
+>   par un Server Component `async` + `export const revalidate`.
+> - **Nettoyage (Phase 6) avancé** : MDX, Netlify CMS et embeds sociaux ont été
+>   retirés dès l'upgrade, car ils bloquaient le passage à Next 16 / React 19.
+> - **Node 22** épinglé ; Next 10 était incompatible.
+> - Tests : **vitest** (et non jest).
 
 ## 1. Contexte et objectif
 

@@ -1,62 +1,40 @@
-import React from "react";
-import { GameContent } from "../lib/games";
-import GameItem from "./GameItem";
-import TagLink from "./TagLink";
-import Pagination from "./Pagination";
-import { TagContent } from "../lib/tags";
+import { Game } from "@/lib/games";
+import { formatRange } from "@/lib/format";
+import styles from "./GameList.module.css";
 
 type Props = {
-  games: GameContent[];
-  tags: TagContent[];
-  pagination: {
-    current: number;
-    pages: number;
-  };
+  games: Game[];
 };
 
-export function GameList({ games, tags, pagination }: Props) {
+export function GameList({ games }: Props) {
   return (
-    <div className={"container"}>
-      <div className={"games"}>
-        <ul className={"game-list"}>
-          {games.map((it, i) => (
-            <li key={i}>
-              <GameItem game={it} />
-            </li>
-          ))}
-        </ul>
-        <Pagination
-          current={pagination.current}
-          pages={pagination.pages}
-          link={{
-            href: (page) => (page === 1 ? "/" : "/[page]"),
-            as: (page) => (page === 1 ? null : "/" + page),
-          }}
-        />
-      </div>
-      <style jsx>{`
-        .container {
-          display: flex;
-        }
-        ul {
-          margin: 0;
-          padding: 0;
-        }
-        li {
-          list-style: none;
-        }
-        .games {
-          display: flex;
-          flex-direction: column;
-          flex: 1 1 auto;
-        }
-        .games li {
-          margin-bottom: 1.5rem;
-        }
-        .game-list {
-          flex: 1 0 auto;
-        }
-      `}</style>
-    </div>
+    <ul className={styles.grid}>
+      {games.map((game) => {
+        const players = formatRange(game.joueursMin, game.joueursMax);
+        const duration = formatRange(game.dureeMin, game.dureeMax);
+        return (
+          <li key={game.myludoId || game.titre} className={styles.card}>
+            <h3 className={styles.title}>{game.titre}</h3>
+            {game.sousTitre && (
+              <span className={styles.subtitle}>{game.sousTitre}</span>
+            )}
+            <div className={styles.meta}>
+              {players && <span>{players} joueurs</span>}
+              {duration && <span>{duration} min</span>}
+              {game.age && <span>{game.age}</span>}
+            </div>
+            {game.categories.length > 0 && (
+              <div className={styles.categories}>
+                {game.categories.map((category) => (
+                  <span key={category} className={styles.badge}>
+                    {category}
+                  </span>
+                ))}
+              </div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }

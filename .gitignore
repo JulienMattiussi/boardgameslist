@@ -18,6 +18,9 @@
 # misc
 .DS_Store
 .env*
+.gcp-service-account.json
+*.gcp-service-account.json
+*service-account*.json
 
 # debug
 npm-debug.log*

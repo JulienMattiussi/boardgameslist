@@ -1,19 +1,6 @@
 {
   "base_url": "https://boardgameslist.vercel.app",
-  "site_title": "Jeux de plateaux",
-  "site_description": "Tous mes jeux de plateau",
-  "site_keywords": [
-    {
-      "keyword": "YavaDeus"
-    },
-    {
-      "keyword": "Actualites"
-    },
-    {
-      "keyword": "Irene"
-    }
-  ],
-  "games_per_page": 5,
-  "twitter_account": "@YavaDeus",
-  "github_account": "YavaDeus"
+  "site_title": "Jeux de plateau",
+  "site_description": "Ma collection de jeux de plateau, filtrable et imprimable",
+  "games_per_page": 20
 }

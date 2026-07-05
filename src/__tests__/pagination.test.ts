@@ -1,3 +1,4 @@
+import { test, expect } from "vitest";
 import { generatePagination } from "../lib/pagination";
 
 test("excerpt starting and ending page numbers", () => {

@@ -6,18 +6,27 @@ lives in a Google Sheet; the app reads it publicly and lets a small set of
 editors curate it.
 
 See [docs/plan-migration.md](docs/plan-migration.md) for the full product design,
-target architecture, data model, and phased migration plan. Read it before any
-substantial work.
+target architecture, data model, and phased migration plan, and
+[docs/session-state.md](docs/session-state.md) for the current status, live
+decisions, operational Google Sheets config, and next steps. Read both before any
+substantial work - session-state.md is the handoff journal and is kept current.
+
+**Sample-first**: do NOT migrate the full 283-game `.ods` yet. Work with a ~15-game
+sample (mostly from the Myludo JSON + one per `.ods` column), and only test the full
+283 import at the very end. See session-state.md section 5.
 
 ## Current state vs target
 
-- **Current**: a half-converted Next.js 10 + MDX + Netlify CMS blog template.
-  Games are `content/games/*.mdx` files read at build by `src/lib/games.ts`.
-- **Target**: Next.js on Vercel, Google Sheet as DB, public reads via ISR, editor
-  writes via a server API route (Google service account), editor access via
-  Auth.js/Google with an email allow-list. MDX + Netlify CMS get removed.
+- **Current**: Next.js 16 (App Router, `src/app/`) + React 19 + TypeScript strict,
+  Node 22. The Google Sheet is already the DB: `src/lib/sheets.ts` reads it via a
+  service account, `src/lib/games.ts` parses rows into typed `Game` objects, and
+  `src/app/page.tsx` renders them with ISR (`revalidate = 3600`). The legacy MDX
+  blog + Netlify CMS + social embeds have been removed. Public read path is done.
+- **Target (remaining)**: editor writes via a server API route (Google service
+  account), editor access via Auth.js/Google with an email allow-list, printable
+  filtered lists, Myludo import. See the phased plan.
 
-When in doubt about direction, follow the plan, not the legacy code.
+Path alias: `@/*` maps to `src/*`. When in doubt about direction, follow the plan.
 
 ## Data and auth rules (non-negotiable)
 
@@ -78,5 +87,6 @@ make install     # yarn install
 make start       # yarn dev (dev server)
 make build       # yarn build
 make start-prod  # yarn start (production server)
-yarn test        # jest
+yarn test        # vitest run (one-shot)
+yarn test:watch  # vitest (watch mode)
 ```
