@@ -34,6 +34,15 @@ export function ClockIcon({ className }: IconProps) {
   );
 }
 
+export function ArrowDownIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M12 5v14" />
+      <path d="m19 12-7 7-7-7" />
+    </svg>
+  );
+}
+
 export function AgeIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

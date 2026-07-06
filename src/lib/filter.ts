@@ -1,6 +1,18 @@
 import { Game } from "./games";
 
-export type SortKey = "titre" | "notePerso" | "noteMoyenne" | "duree" | "age";
+export type SortKey =
+  "titre" | "notePerso" | "noteMoyenne" | "duree" | "age" | "dateAcquisition";
+
+export type SortDirection = "asc" | "desc";
+
+export const NATURAL_SORT_DIRECTION: Record<SortKey, SortDirection> = {
+  titre: "asc",
+  notePerso: "desc",
+  noteMoyenne: "desc",
+  duree: "asc",
+  age: "asc",
+  dateAcquisition: "desc",
+};
 
 export type GameKind = "societe" | "enigme";
 
@@ -89,28 +101,25 @@ export function filterGames(games: Game[], filters: Filters): Game[] {
   );
 }
 
-export function sortGames(games: Game[], key: SortKey): Game[] {
-  const sorted = [...games];
-  switch (key) {
-    case "titre":
-      return sorted.sort((a, b) => a.titre.localeCompare(b.titre, "fr"));
-    case "notePerso":
-      return sorted.sort((a, b) => (b.notePerso ?? -1) - (a.notePerso ?? -1));
-    case "noteMoyenne":
-      return sorted.sort(
-        (a, b) => (b.noteMoyenne ?? -1) - (a.noteMoyenne ?? -1),
-      );
-    case "duree":
-      return sorted.sort(
-        (a, b) =>
-          (a.dureeMax ?? a.dureeMin ?? Number.POSITIVE_INFINITY) -
-          (b.dureeMax ?? b.dureeMin ?? Number.POSITIVE_INFINITY),
-      );
-    case "age":
-      return sorted.sort(
-        (a, b) =>
-          (a.age ?? Number.POSITIVE_INFINITY) -
-          (b.age ?? Number.POSITIVE_INFINITY),
-      );
-  }
+const SORT_COMPARATORS: Record<SortKey, (a: Game, b: Game) => number> = {
+  titre: (a, b) => a.titre.localeCompare(b.titre, "fr"),
+  notePerso: (a, b) => (a.notePerso ?? -1) - (b.notePerso ?? -1),
+  noteMoyenne: (a, b) => (a.noteMoyenne ?? -1) - (b.noteMoyenne ?? -1),
+  duree: (a, b) =>
+    (a.dureeMax ?? a.dureeMin ?? Number.POSITIVE_INFINITY) -
+    (b.dureeMax ?? b.dureeMin ?? Number.POSITIVE_INFINITY),
+  age: (a, b) =>
+    (a.age ?? Number.POSITIVE_INFINITY) - (b.age ?? Number.POSITIVE_INFINITY),
+  dateAcquisition: (a, b) =>
+    (a.dateAcquisition || "").localeCompare(b.dateAcquisition || ""),
+};
+
+export function sortGames(
+  games: Game[],
+  key: SortKey,
+  direction: SortDirection = NATURAL_SORT_DIRECTION[key],
+): Game[] {
+  const sign = direction === "desc" ? -1 : 1;
+  const comparator = SORT_COMPARATORS[key];
+  return [...games].sort((a, b) => sign * comparator(a, b));
 }

@@ -52,6 +52,53 @@
   color: var(--color-muted);
 }
 
+.sortArrowAsc {
+  transform: rotate(180deg);
+}
+
+.sortControl {
+  display: inline-flex;
+  align-items: stretch;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.sortControl:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.sortSelect {
+  padding: 0.6rem 0.9rem;
+  font: inherit;
+  color: var(--color-fg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.sortSelect:focus {
+  outline: none;
+}
+
+.sortControl .directionButton {
+  width: auto;
+  height: auto;
+  align-self: stretch;
+  padding: 0 0.7rem;
+  border-radius: 0;
+  border-left: 1px solid var(--color-border);
+  color: var(--color-accent);
+  background: transparent;
+}
+
+.sortControl .directionButton:hover {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
 .select {
   padding: 0.6rem 0.9rem;
   font: inherit;

@@ -195,3 +195,36 @@ test("sortGames orders by minimum age with unknown ages last", () => {
     "Inconnu",
   ]);
 });
+
+test("sortGames orders by acquisition date, most recent first, undated last", () => {
+  const games = [
+    makeGame({ titre: "Ancien", dateAcquisition: "2020-01-15" }),
+    makeGame({ titre: "Recent", dateAcquisition: "2024-06-30" }),
+    makeGame({ titre: "Sans date", dateAcquisition: "" }),
+    makeGame({ titre: "Intermediaire", dateAcquisition: "2022-03-01" }),
+  ];
+  expect(sortGames(games, "dateAcquisition").map((g) => g.titre)).toEqual([
+    "Recent",
+    "Intermediaire",
+    "Ancien",
+    "Sans date",
+  ]);
+});
+
+test("sortGames reverses order when direction is flipped from the natural one", () => {
+  const games = [
+    makeGame({ titre: "Zeus", noteMoyenne: 6 }),
+    makeGame({ titre: "Alpha", noteMoyenne: 8 }),
+    makeGame({ titre: "Milieu", noteMoyenne: 7 }),
+  ];
+  expect(sortGames(games, "titre", "desc").map((g) => g.titre)).toEqual([
+    "Zeus",
+    "Milieu",
+    "Alpha",
+  ]);
+  expect(sortGames(games, "noteMoyenne", "asc").map((g) => g.titre)).toEqual([
+    "Zeus",
+    "Milieu",
+    "Alpha",
+  ]);
+});

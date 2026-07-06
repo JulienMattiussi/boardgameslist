@@ -4,7 +4,14 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Game } from "@/lib/games";
-import { filterGames, sortGames, SortKey, GameKind } from "@/lib/filter";
+import {
+  filterGames,
+  sortGames,
+  SortKey,
+  SortDirection,
+  NATURAL_SORT_DIRECTION,
+  GameKind,
+} from "@/lib/filter";
 import { GameList } from "./GameList";
 import { PrintList } from "./PrintList";
 import { GameFormModal } from "./GameFormModal";
@@ -18,6 +25,7 @@ import {
   PrinterIcon,
   PlusIcon,
   UploadIcon,
+  ArrowDownIcon,
 } from "./icons";
 import styles from "./Catalog.module.css";
 
@@ -35,11 +43,12 @@ const DURATION_OPTIONS = [
 ];
 
 const SORT_LABELS: Record<SortKey, string> = {
-  titre: "Titre (A-Z)",
-  notePerso: "Meilleure note perso",
-  noteMoyenne: "Meilleure note moyenne",
-  duree: "Duree croissante",
-  age: "Age minimum",
+  titre: "Titre",
+  notePerso: "Note perso",
+  noteMoyenne: "Note moyenne",
+  duree: "Duree",
+  age: "Age",
+  dateAcquisition: "Date d'acquisition",
 };
 
 const KIND_OPTIONS: { value: "" | GameKind; label: string }[] = [
@@ -58,6 +67,9 @@ export function Catalog({ games }: Props) {
   const [durationKey, setDurationKey] = useState<string | null>(null);
   const [kind, setKind] = useState<"" | GameKind>("");
   const [sort, setSort] = useState<SortKey>("titre");
+  const [direction, setDirection] = useState<SortDirection>(
+    NATURAL_SORT_DIRECTION.titre,
+  );
   const [editGame, setEditGame] = useState<Game | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -88,8 +100,9 @@ export function Catalog({ games }: Props) {
         kind: kind === "" ? null : kind,
       }),
       sort,
+      direction,
     );
-  }, [games, query, players, durationKey, kind, sort]);
+  }, [games, query, players, durationKey, kind, sort, direction]);
 
   const summary = useMemo(() => {
     const parts: string[] = [];
@@ -134,20 +147,43 @@ export function Catalog({ games }: Props) {
           ))}
         </select>
 
-        <label className={styles.sort}>
+        <div className={styles.sort}>
           <span className={styles.sortLabel}>Trier par</span>
-          <select
-            className={styles.select}
-            value={sort}
-            onChange={(event) => setSort(event.target.value as SortKey)}
-          >
-            {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
-              <option key={key} value={key}>
-                {SORT_LABELS[key]}
-              </option>
-            ))}
-          </select>
-        </label>
+          <div className={styles.sortControl}>
+            <select
+              className={styles.sortSelect}
+              value={sort}
+              aria-label="Trier par"
+              onChange={(event) => {
+                const key = event.target.value as SortKey;
+                setSort(key);
+                setDirection(NATURAL_SORT_DIRECTION[key]);
+              }}
+            >
+              {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
+                <option key={key} value={key}>
+                  {SORT_LABELS[key]}
+                </option>
+              ))}
+            </select>
+            <IconButton
+              variant="ghost"
+              className={styles.directionButton}
+              label={
+                direction === "asc" ? "Ordre croissant" : "Ordre decroissant"
+              }
+              onClick={() =>
+                setDirection((current) => (current === "asc" ? "desc" : "asc"))
+              }
+            >
+              <ArrowDownIcon
+                className={
+                  direction === "asc" ? styles.sortArrowAsc : undefined
+                }
+              />
+            </IconButton>
+          </div>
+        </div>
       </div>
 
       <div className={styles.filters}>
