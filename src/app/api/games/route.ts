@@ -4,6 +4,8 @@ import { isEditorRequest } from "@/lib/session";
 import { normalizeGame, gameToRow } from "@/lib/games";
 import { appendGameRow, updateGameRow, deleteGameRow } from "@/lib/sheets";
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   if (!(await isEditorRequest())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

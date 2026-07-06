@@ -6,6 +6,7 @@ import config from "@/lib/config";
 import styles from "./page.module.css";
 
 export const revalidate = 3600;
+export const maxDuration = 60;
 
 export default async function HomePage() {
   const games = await fetchGames();

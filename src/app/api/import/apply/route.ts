@@ -4,6 +4,8 @@ import { isEditorRequest } from "@/lib/session";
 import { normalizeGame, gameToRow } from "@/lib/games";
 import { appendGameRows, updateGameRows } from "@/lib/sheets";
 
+export const maxDuration = 60;
+
 type Operation = { rowIndex: number | null; fields: Record<string, unknown> };
 
 export async function POST(request: Request) {
