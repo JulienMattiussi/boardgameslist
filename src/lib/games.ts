@@ -1,4 +1,4 @@
-import { readSheetRows } from "./sheets";
+import { readSheetRows } from "./sheets-read";
 
 export type Game = {
   myludoId: string;

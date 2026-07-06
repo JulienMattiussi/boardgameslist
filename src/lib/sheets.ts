@@ -1,6 +1,5 @@
 import { google } from "googleapis";
 
-const READONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly";
 const READWRITE_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 const SHEET_NAME = "Jeux";
 const SHEET_ID = 0;
@@ -31,24 +30,6 @@ function getSpreadsheetId(): string {
     throw new Error("GOOGLE_SHEETS_SPREADSHEET_ID is not set");
   }
   return spreadsheetId;
-}
-
-export async function readSheetRows(): Promise<string[][]> {
-  const sheets = google.sheets({
-    version: "v4",
-    auth: getAuth([READONLY_SCOPE]),
-  });
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: getSpreadsheetId(),
-    range: SHEET_NAME,
-    // Typed cells: numbers come back as numbers (locale-proof), dates as ISO strings.
-    valueRenderOption: "UNFORMATTED_VALUE",
-    dateTimeRenderOption: "FORMATTED_STRING",
-  });
-  const values = res.data.values ?? [];
-  return values.map((row) =>
-    row.map((cell) => (cell == null ? "" : String(cell))),
-  );
 }
 
 export async function appendGameRows(rows: CellValue[][]): Promise<void> {
