@@ -18,7 +18,7 @@ export function GameList({ games, onEdit, detailed }: Props) {
     <div className={styles.grid}>
       {games.map((game) => (
         <GameCard
-          key={game.myludoId || game.titre}
+          key={game.rowIndex}
           game={game}
           onEdit={onEdit}
           detailed={detailed}

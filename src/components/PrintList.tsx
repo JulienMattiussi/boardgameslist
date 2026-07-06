@@ -42,8 +42,13 @@ export function PrintList({ games, summary }: Props) {
             </thead>
             <tbody>
               {column.map((game) => (
-                <tr key={game.myludoId || game.titre}>
-                  <td className={styles.name}>{game.titre}</td>
+                <tr key={game.rowIndex}>
+                  <td className={styles.name}>
+                    {game.titre}
+                    {game.sousTitre && (
+                      <span className={styles.sub}> - {game.sousTitre}</span>
+                    )}
+                  </td>
                   <td className={styles.num}>
                     {formatRange(game.joueursMin, game.joueursMax)}
                   </td>

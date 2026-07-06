@@ -69,6 +69,11 @@
   font-weight: 600;
 }
 
+.sub {
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
 .num {
   text-align: right;
   white-space: nowrap;
