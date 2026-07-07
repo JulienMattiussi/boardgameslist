@@ -14,10 +14,11 @@ data model, import rules). Read reference.md before any operational work.
 
 Next.js 16 (App Router, `src/app/`) + React 19 + TypeScript strict, Node 22.
 Google Sheet as DB. The migration is complete: public read (ISR), filterable
-catalog, printable list, editor auth (Auth.js/Google + allow-list), full editing
-(add/edit/delete via `/api/games` + a modal), and Myludo import (CSV/JSON/XLSX ->
-dedup cascade -> step-by-step review modal). The legacy MDX blog + Netlify CMS
-have been removed.
+catalog, configurable print (a `PrintModal` with schematic preview -> `PrintDocument`
+renders one page per section; pure logic in `src/lib/print.ts`), editor auth
+(Auth.js/Google + allow-list), full editing (add/edit/delete via `/api/games` + a
+modal), and Myludo import (CSV/JSON/XLSX -> dedup cascade -> step-by-step review
+modal). The legacy MDX blog + Netlify CMS have been removed.
 
 Path alias: `@/*` maps to `src/*`.
 

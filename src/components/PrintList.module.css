@@ -15,6 +15,11 @@
   font-weight: 600;
 }
 
+.label {
+  color: var(--color-muted);
+  font-weight: 400;
+}
+
 .meta {
   margin: 0.2rem 0 0;
   font-size: 0.9rem;
@@ -69,8 +74,32 @@
   font-weight: 600;
 }
 
+.nameRow {
+  display: flex;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+.thumb {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 2px;
+  background-size: cover;
+  background-position: center;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
 .sub {
   font-weight: 400;
+  color: var(--color-muted);
+}
+
+.tags {
+  display: block;
+  font-weight: 400;
+  font-size: 0.72rem;
   color: var(--color-muted);
 }
 
@@ -83,5 +112,9 @@
 @media print {
   .sheet {
     display: block;
+  }
+
+  .sheet + .sheet {
+    break-before: page;
   }
 }

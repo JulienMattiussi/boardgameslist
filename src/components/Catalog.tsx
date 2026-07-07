@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Game } from "@/lib/games";
@@ -12,8 +12,10 @@ import {
   NATURAL_SORT_DIRECTION,
   GameKind,
 } from "@/lib/filter";
+import { buildPrintSections, PrintConfig, PrintJob } from "@/lib/print";
 import { GameList } from "./GameList";
-import { PrintList } from "./PrintList";
+import { PrintDocument } from "./PrintDocument";
+import { PrintModal } from "./PrintModal";
 import { GameFormModal } from "./GameFormModal";
 import { ImportModal } from "./ImportModal";
 import { Chip } from "./ui/Chip";
@@ -73,6 +75,8 @@ export function Catalog({ games }: Props) {
   const [editGame, setEditGame] = useState<Game | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [printOpen, setPrintOpen] = useState(false);
+  const [printJob, setPrintJob] = useState<PrintJob | null>(null);
   const [detailed, setDetailed] = useState(false);
 
   const openCreate = () => {
@@ -118,6 +122,25 @@ export function Catalog({ games }: Props) {
     if (kindOption) parts.push(kindOption.label);
     return parts.join(" · ");
   }, [query, players, durationKey, kind]);
+
+  const startPrint = (config: PrintConfig) => {
+    setPrintJob({
+      sections: buildPrintSections(visible, config),
+      summary,
+      config,
+    });
+    setPrintOpen(false);
+  };
+
+  useEffect(() => {
+    if (!printJob) {
+      return;
+    }
+    const onAfterPrint = () => setPrintJob(null);
+    window.addEventListener("afterprint", onAfterPrint);
+    window.print();
+    return () => window.removeEventListener("afterprint", onAfterPrint);
+  }, [printJob]);
 
   return (
     <section>
@@ -267,7 +290,10 @@ export function Catalog({ games }: Props) {
               <UploadIcon />
             </IconButton>
           )}
-          <IconButton label="Imprimer la liste" onClick={() => window.print()}>
+          <IconButton
+            label="Imprimer la liste"
+            onClick={() => setPrintOpen(true)}
+          >
             <PrinterIcon />
           </IconButton>
         </div>
@@ -281,7 +307,16 @@ export function Catalog({ games }: Props) {
         />
       </div>
 
-      <PrintList games={visible} summary={summary} />
+      {printJob && <PrintDocument job={printJob} />}
+
+      {printOpen && (
+        <PrintModal
+          games={visible}
+          summary={summary}
+          onClose={() => setPrintOpen(false)}
+          onPrint={startPrint}
+        />
+      )}
 
       {modalOpen && (
         <GameFormModal

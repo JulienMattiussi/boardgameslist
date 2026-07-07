@@ -27,8 +27,12 @@ route serveur avec un compte de service.
   durée, âge).
 - 🃏 **Vignettes riches** : note perso + note moyenne, et un mode "plus d'infos"
   (thèmes, mécanismes, édition, emplacement...).
-- 🖨️ **Liste imprimable** filtrée, pensée pour le papier (export PDF via
-  l'impression du navigateur). C'est le livrable central.
+- 🖨️ **Impression paramétrable** : une modale d'options (aperçu schématique
+  inclus) avec densité minimale ou riche (image, catégories, thèmes),
+  optimisation de l'espace des titres, et choix du contenu (liste affichée, une
+  page par nombre de joueurs, une page par type, jeux solo uniquement ou sans
+  les jeux solo). Toute la configuration s'imprime en une fois. Pensée pour le
+  papier (export PDF via l'impression du navigateur). C'est le livrable central.
 - ✏️ **Édition en ligne** (éditeurs connectés) : ajout, modification, suppression
   via une modale, avec autocomplétion des catégories / thèmes / mécanismes /
   éditeurs.
