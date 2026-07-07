@@ -4,9 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Game } from "@/lib/games";
 import {
   buildPrintSections,
+  columnCountFor,
   layoutColumns,
   PrintConfig,
-  PrintRichness,
+  PrintDensity,
   SoloFilter,
 } from "@/lib/print";
 import { Chip } from "./ui/Chip";
@@ -22,9 +23,26 @@ type Props = {
   onPrint: (config: PrintConfig) => void;
 };
 
-const RICHNESS_OPTIONS: { value: PrintRichness; label: string }[] = [
-  { value: "minimal", label: "Minimale" },
-  { value: "rich", label: "Riche (image, categories, themes)" },
+const DENSITY_OPTIONS: {
+  value: PrintDensity;
+  label: string;
+  hint: string;
+}[] = [
+  {
+    value: "rich",
+    label: "Riche",
+    hint: "Ajoute image, categories et themes. Moins de jeux par page.",
+  },
+  {
+    value: "normal",
+    label: "Normale",
+    hint: "Titre, nombre de joueurs et duree.",
+  },
+  {
+    value: "compact",
+    label: "Compacte",
+    hint: "Interligne et police resserres pour placer plus de jeux par page.",
+  },
 ];
 
 const SOLO_OPTIONS: { value: SoloFilter; label: string }[] = [
@@ -35,13 +53,58 @@ const SOLO_OPTIONS: { value: SoloFilter; label: string }[] = [
 
 const PREVIEW_MAX_ROWS = 14;
 
+const STORAGE_KEY = "boardgameslist.print-options";
+
+const DEFAULT_CONFIG: PrintConfig = {
+  density: "normal",
+  splitByType: false,
+  splitByCategory: false,
+  splitByTheme: false,
+  splitByMechanic: false,
+  splitByDuration: false,
+  splitByPlayers: false,
+  solo: "all",
+};
+
+function loadStoredConfig(): PrintConfig {
+  if (typeof window === "undefined") {
+    return DEFAULT_CONFIG;
+  }
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? { ...DEFAULT_CONFIG, ...JSON.parse(raw) } : DEFAULT_CONFIG;
+  } catch {
+    return DEFAULT_CONFIG;
+  }
+}
+
+function saveStoredConfig(config: PrintConfig): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  } catch {
+    return;
+  }
+}
+
 export function PrintModal({ games, summary, onClose, onPrint }: Props) {
-  const [richness, setRichness] = useState<PrintRichness>("minimal");
-  const [optimizeTitles, setOptimizeTitles] = useState(false);
-  const [splitByType, setSplitByType] = useState(false);
-  const [splitByDuration, setSplitByDuration] = useState(false);
-  const [splitByPlayers, setSplitByPlayers] = useState(false);
-  const [solo, setSolo] = useState<SoloFilter>("all");
+  const initial = useMemo(() => loadStoredConfig(), []);
+  const [density, setDensity] = useState<PrintDensity>(initial.density);
+  const [splitByType, setSplitByType] = useState(initial.splitByType);
+  const [splitByCategory, setSplitByCategory] = useState(
+    initial.splitByCategory,
+  );
+  const [splitByTheme, setSplitByTheme] = useState(initial.splitByTheme);
+  const [splitByMechanic, setSplitByMechanic] = useState(
+    initial.splitByMechanic,
+  );
+  const [splitByDuration, setSplitByDuration] = useState(
+    initial.splitByDuration,
+  );
+  const [splitByPlayers, setSplitByPlayers] = useState(initial.splitByPlayers);
+  const [solo, setSolo] = useState<SoloFilter>(initial.solo);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -53,21 +116,47 @@ export function PrintModal({ games, summary, onClose, onPrint }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  useEffect(() => {
+    saveStoredConfig({
+      density,
+      splitByType,
+      splitByCategory,
+      splitByTheme,
+      splitByMechanic,
+      splitByDuration,
+      splitByPlayers,
+      solo,
+    });
+  }, [
+    density,
+    splitByType,
+    splitByCategory,
+    splitByTheme,
+    splitByMechanic,
+    splitByDuration,
+    splitByPlayers,
+    solo,
+  ]);
+
   const sections = useMemo(
     () =>
       buildPrintSections(games, {
-        richness,
-        optimizeTitles,
+        density,
         splitByType,
+        splitByCategory,
+        splitByTheme,
+        splitByMechanic,
         splitByDuration,
         splitByPlayers,
         solo,
       }),
     [
       games,
-      richness,
-      optimizeTitles,
+      density,
       splitByType,
+      splitByCategory,
+      splitByTheme,
+      splitByMechanic,
       splitByDuration,
       splitByPlayers,
       solo,
@@ -84,9 +173,9 @@ export function PrintModal({ games, summary, onClose, onPrint }: Props) {
       sections.map((section) => ({
         label: section.label,
         count: section.games.length,
-        columns: layoutColumns(section.games, optimizeTitles),
+        columns: layoutColumns(section.games, columnCountFor(density)),
       })),
-    [sections, optimizeTitles],
+    [sections, density],
   );
 
   const print = () => {
@@ -94,14 +183,19 @@ export function PrintModal({ games, summary, onClose, onPrint }: Props) {
       return;
     }
     onPrint({
-      richness,
-      optimizeTitles,
+      density,
       splitByType,
+      splitByCategory,
+      splitByTheme,
+      splitByMechanic,
       splitByDuration,
       splitByPlayers,
       solo,
     });
   };
+
+  const rich = density === "rich";
+  const compact = density === "compact";
 
   return (
     <div className={styles.backdrop} onClick={onClose}>
@@ -124,31 +218,19 @@ export function PrintModal({ games, summary, onClose, onPrint }: Props) {
             <fieldset className={styles.group}>
               <legend className={styles.legend}>Densite</legend>
               <div className={styles.choices}>
-                {RICHNESS_OPTIONS.map((option) => (
+                {DENSITY_OPTIONS.map((option) => (
                   <Chip
                     key={option.value}
-                    active={richness === option.value}
-                    onClick={() => setRichness(option.value)}
+                    active={density === option.value}
+                    onClick={() => setDensity(option.value)}
                   >
                     {option.label}
                   </Chip>
                 ))}
               </div>
-            </fieldset>
-
-            <fieldset className={styles.group}>
-              <legend className={styles.legend}>Mise en page</legend>
-              <div className={styles.choices}>
-                <Chip
-                  active={optimizeTitles}
-                  onClick={() => setOptimizeTitles((value) => !value)}
-                >
-                  {"Optimiser l'espace des titres"}
-                </Chip>
-              </div>
               <p className={styles.hint}>
-                Ignore le tri : regroupe les titres de longueur voisine et
-                adapte la largeur des colonnes.
+                {DENSITY_OPTIONS.find((option) => option.value === density)
+                  ?.hint ?? ""}
               </p>
             </fieldset>
 
@@ -165,6 +247,24 @@ export function PrintModal({ games, summary, onClose, onPrint }: Props) {
                   Par type de jeu
                 </Chip>
                 <Chip
+                  active={splitByCategory}
+                  onClick={() => setSplitByCategory((value) => !value)}
+                >
+                  Par categorie
+                </Chip>
+                <Chip
+                  active={splitByTheme}
+                  onClick={() => setSplitByTheme((value) => !value)}
+                >
+                  Par theme
+                </Chip>
+                <Chip
+                  active={splitByMechanic}
+                  onClick={() => setSplitByMechanic((value) => !value)}
+                >
+                  Par mecanique
+                </Chip>
+                <Chip
                   active={splitByDuration}
                   onClick={() => setSplitByDuration((value) => !value)}
                 >
@@ -178,9 +278,9 @@ export function PrintModal({ games, summary, onClose, onPrint }: Props) {
                 </Chip>
               </div>
               <p className={styles.hint}>
-                Une page est generee pour chaque combinaison. Le decoupage par
-                nombre de joueurs peut faire apparaitre un jeu sur plusieurs
-                pages.
+                Une page est generee pour chaque combinaison. Un jeu peut
+                apparaitre sur plusieurs pages (plusieurs categories, themes,
+                mecaniques, tranches de duree ou nombres de joueurs).
               </p>
             </fieldset>
 
@@ -219,25 +319,25 @@ export function PrintModal({ games, summary, onClose, onPrint }: Props) {
                         </span>
                       )}
                     </div>
-                    <div className={styles.pageColumns}>
+                    <div
+                      className={`${styles.pageColumns} ${
+                        compact ? styles.pageColumnsCompact : ""
+                      }`}
+                    >
                       {preview.columns.map((column, colIndex) => (
-                        <div
-                          key={colIndex}
-                          className={styles.pageColumn}
-                          style={{ flexGrow: column.weight }}
-                        >
+                        <div key={colIndex} className={styles.pageColumn}>
                           {column.games
-                            .slice(0, PREVIEW_MAX_ROWS)
+                            .slice(
+                              0,
+                              compact ? PREVIEW_MAX_ROWS * 2 : PREVIEW_MAX_ROWS,
+                            )
                             .map((game) => (
                               <span key={game.rowIndex} className={styles.row}>
-                                {richness === "rich" && (
-                                  <span className={styles.rowThumb} />
-                                )}
+                                {rich && <span className={styles.rowThumb} />}
                                 <span className={styles.rowLines}>
                                   <span className={styles.rowMain} />
-                                  {richness === "rich" && (
-                                    <span className={styles.rowSub} />
-                                  )}
+                                  {rich && <span className={styles.rowSub} />}
+                                  {rich && <span className={styles.rowSub} />}
                                 </span>
                               </span>
                             ))}

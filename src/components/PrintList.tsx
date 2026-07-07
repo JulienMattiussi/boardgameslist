@@ -1,6 +1,6 @@
 import { Game } from "@/lib/games";
 import { formatRange } from "@/lib/format";
-import { layoutColumns, PrintRichness } from "@/lib/print";
+import { columnCountFor, layoutColumns, PrintDensity } from "@/lib/print";
 import config from "@/lib/config";
 import styles from "./PrintList.module.css";
 
@@ -8,25 +8,42 @@ type Props = {
   games: Game[];
   summary: string;
   label?: string;
-  richness: PrintRichness;
-  optimize: boolean;
+  density: PrintDensity;
 };
 
-function tags(game: Game): string {
-  return [...game.categories, ...game.themes].join(" · ");
+function metaTags(game: Game): string {
+  return [...game.categories, ...game.themes, ...game.mecanismes].join(" · ");
 }
 
-export function PrintList({
-  games,
-  summary,
-  label,
-  richness,
-  optimize,
-}: Props) {
-  const columns = layoutColumns(games, optimize);
-  const rich = richness === "rich";
+function metaCredits(game: Game): string {
+  return [game.auteurs.join(", "), game.editeur.join(", "), game.emplacement]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function formatNote(game: Game): string {
+  if (game.notePerso !== null) {
+    return `${game.notePerso}`;
+  }
+  if (game.noteMoyenne !== null) {
+    return `(${game.noteMoyenne})`;
+  }
+  return "-";
+}
+
+export function PrintList({ games, summary, label, density }: Props) {
+  const rich = density === "rich";
+  const compact = density === "compact";
+  const columns = layoutColumns(games, columnCountFor(density));
+  const sheetClass = [
+    styles.sheet,
+    compact && styles.compact,
+    rich && styles.rich,
+  ]
+    .filter(Boolean)
+    .join(" ");
   return (
-    <div className={styles.sheet}>
+    <div className={sheetClass}>
       <header className={styles.header}>
         <h2 className={styles.title}>
           {config.site_title}
@@ -39,17 +56,14 @@ export function PrintList({
       </header>
       <div className={styles.columns}>
         {columns.map((column, index) => (
-          <table
-            key={index}
-            className={styles.column}
-            style={{ flex: `${column.weight} 1 0` }}
-          >
+          <table key={index} className={styles.column}>
             <thead>
               <tr>
                 <th className={styles.thName}>Titre</th>
                 <th className={styles.thNum}>Nb J.</th>
                 <th className={styles.thNum}>Duree</th>
                 {rich && <th className={styles.thNum}>Age</th>}
+                {rich && <th className={styles.thNum}>Note</th>}
               </tr>
             </thead>
             <tbody>
@@ -57,10 +71,14 @@ export function PrintList({
                 <tr key={game.rowIndex}>
                   <td className={styles.name}>
                     <span className={styles.nameRow}>
-                      {rich && game.image && (
+                      {rich && (
                         <span
                           className={styles.thumb}
-                          style={{ backgroundImage: `url(${game.image})` }}
+                          style={
+                            game.image
+                              ? { backgroundImage: `url(${game.image})` }
+                              : undefined
+                          }
                         />
                       )}
                       <span>
@@ -71,8 +89,13 @@ export function PrintList({
                             - {game.sousTitre}
                           </span>
                         )}
-                        {rich && tags(game) && (
-                          <span className={styles.tags}>{tags(game)}</span>
+                        {rich && metaTags(game) && (
+                          <span className={styles.tags}>{metaTags(game)}</span>
+                        )}
+                        {rich && metaCredits(game) && (
+                          <span className={styles.credits}>
+                            {metaCredits(game)}
+                          </span>
                         )}
                       </span>
                     </span>
@@ -88,6 +111,7 @@ export function PrintList({
                       {game.age !== null ? `${game.age}+` : "-"}
                     </td>
                   )}
+                  {rich && <td className={styles.num}>{formatNote(game)}</td>}
                 </tr>
               ))}
             </tbody>

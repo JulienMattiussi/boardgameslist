@@ -160,8 +160,16 @@
   display: flex;
   flex-direction: column;
   gap: 0.28rem;
-  flex-basis: 0;
+  flex: 1 1 0;
   min-width: 0;
+}
+
+.pageColumnsCompact .pageColumn {
+  gap: 0.12rem;
+}
+
+.pageColumnsCompact .rowMain {
+  height: 2px;
 }
 
 .row {

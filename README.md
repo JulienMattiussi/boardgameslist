@@ -24,15 +24,17 @@ route serveur avec un compte de service.
 
 - 🔎 **Catalogue filtrable** : recherche plein texte, nombre de joueurs, durée,
   type (société / énigme-enquête), et tris (titre, note perso, note moyenne,
-  durée, âge).
+  durée, âge, date d'acquisition) avec choix du sens (croissant / décroissant).
 - 🃏 **Vignettes riches** : note perso + note moyenne, et un mode "plus d'infos"
   (thèmes, mécanismes, édition, emplacement...).
 - 🖨️ **Impression paramétrable** : une modale d'options (aperçu schématique
-  inclus) avec densité minimale ou riche (image, catégories, thèmes),
-  optimisation de l'espace des titres, et choix du contenu (liste affichée, une
-  page par nombre de joueurs, une page par type, jeux solo uniquement ou sans
-  les jeux solo). Toute la configuration s'imprime en une fois. Pensée pour le
-  papier (export PDF via l'impression du navigateur). C'est le livrable central.
+  inclus) avec une densité au choix (riche = image + catégories + thèmes,
+  normale, ou compacte pour plus de jeux par page), des découpages cumulables
+  (une page par type, par catégorie, par thème, par mécanique, par durée ou par
+  nombre de joueurs) et un filtre solo (tous, solo uniquement, sans les jeux
+  solo). Toute la configuration s'imprime en une fois et les options sont
+  mémorisées d'une fois sur l'autre. Pensée pour le papier (export PDF via
+  l'impression du navigateur). C'est le livrable central.
 - ✏️ **Édition en ligne** (éditeurs connectés) : ajout, modification, suppression
   via une modale, avec autocomplétion des catégories / thèmes / mécanismes /
   éditeurs.

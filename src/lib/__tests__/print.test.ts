@@ -4,6 +4,7 @@ import {
   isSoloOnly,
   playerCountsInSet,
   buildPrintSections,
+  columnCountFor,
   layoutColumns,
   PrintConfig,
 } from "../print";
@@ -39,9 +40,11 @@ function makeGame(overrides: Partial<Game>): Game {
 
 function config(overrides: Partial<PrintConfig>): PrintConfig {
   return {
-    richness: "minimal",
-    optimizeTitles: false,
+    density: "normal",
     splitByType: false,
+    splitByCategory: false,
+    splitByTheme: false,
+    splitByMechanic: false,
     splitByDuration: false,
     splitByPlayers: false,
     solo: "all",
@@ -94,6 +97,30 @@ test("buildPrintSections splitByType splits by kind and skips empty kinds", () =
     "Jeux de plateau",
     "Enquetes & enigmes",
   ]);
+});
+
+test("buildPrintSections splitByCategory makes one page per category, duplicating multi-category games", () => {
+  const a = makeGame({ titre: "A", categories: ["Cartes", "Familial"] });
+  const b = makeGame({ titre: "B", categories: ["Familial"] });
+  const sections = buildPrintSections(
+    [a, b],
+    config({ splitByCategory: true }),
+  );
+  expect(sections.map((s) => s.label)).toEqual(["Cartes", "Familial"]);
+  expect(sections[0].games).toEqual([a]);
+  expect(sections[1].games).toEqual([a, b]);
+});
+
+test("buildPrintSections splitByTheme and splitByMechanic use their fields", () => {
+  const a = makeGame({ titre: "A", themes: ["Espace"], mecanismes: ["Draft"] });
+  expect(
+    buildPrintSections([a], config({ splitByTheme: true })).map((s) => s.label),
+  ).toEqual(["Espace"]);
+  expect(
+    buildPrintSections([a], config({ splitByMechanic: true })).map(
+      (s) => s.label,
+    ),
+  ).toEqual(["Draft"]);
 });
 
 test("buildPrintSections splitByPlayers duplicates games across supported counts", () => {
@@ -153,32 +180,120 @@ test("buildPrintSections combines type, players, and solo filter", () => {
   );
 });
 
-test("layoutColumns keeps order and equal weights when not optimizing", () => {
-  const games = [
-    makeGame({ titre: "aaaa" }),
-    makeGame({ titre: "bb" }),
-    makeGame({ titre: "cccccc" }),
-  ];
-  const columns = layoutColumns(games, false);
-  expect(columns.map((c) => c.weight)).toEqual([1, 1, 1]);
-  expect(columns.flatMap((c) => c.games.map((g) => g.titre))).toEqual([
-    "aaaa",
-    "bb",
-    "cccccc",
+test("buildPrintSections returns no pages for an empty list", () => {
+  expect(buildPrintSections([], config({}))).toEqual([]);
+  expect(
+    buildPrintSections(
+      [],
+      config({
+        splitByType: true,
+        splitByPlayers: true,
+        splitByCategory: true,
+      }),
+    ),
+  ).toEqual([]);
+});
+
+test("splitByPlayers with solo=exclude skips the 1-player page", () => {
+  const wide = makeGame({ titre: "Wide", joueursMin: 1, joueursMax: 3 });
+  const soloOnly = makeGame({ titre: "Solo", joueursMin: 1, joueursMax: 1 });
+  const sections = buildPrintSections(
+    [wide, soloOnly],
+    config({ splitByPlayers: true, solo: "exclude" }),
+  );
+  expect(sections.map((s) => s.label)).toEqual(["2 joueurs", "3 joueurs"]);
+  expect(sections.flatMap((s) => s.games)).toEqual([wide, wide]);
+});
+
+test("splitByPlayers with solo=only keeps only the 1-player page", () => {
+  const soloOnly = makeGame({ titre: "Solo", joueursMin: 1, joueursMax: 1 });
+  const wide = makeGame({ titre: "Wide", joueursMin: 1, joueursMax: 4 });
+  const sections = buildPrintSections(
+    [soloOnly, wide],
+    config({ splitByPlayers: true, solo: "only" }),
+  );
+  expect(sections.map((s) => s.label)).toEqual(["1 joueur"]);
+  expect(sections[0].games).toEqual([soloOnly]);
+});
+
+test("playerCountsInSet caps very large maximums and ignores missing data", () => {
+  expect(
+    playerCountsInSet([makeGame({ joueursMin: 1, joueursMax: 20 })]),
+  ).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  expect(
+    playerCountsInSet([makeGame({ joueursMin: null, joueursMax: null })]),
+  ).toEqual([]);
+});
+
+test("splitByCategory drops games that have no category", () => {
+  const withCat = makeGame({ titre: "A", categories: ["Cartes"] });
+  const without = makeGame({ titre: "B", categories: [] });
+  const sections = buildPrintSections(
+    [withCat, without],
+    config({ splitByCategory: true }),
+  );
+  expect(sections.map((s) => s.label)).toEqual(["Cartes"]);
+  expect(sections[0].games).toEqual([withCat]);
+});
+
+test("splitByDuration places a game spanning buckets on several pages", () => {
+  const spanning = makeGame({ titre: "Span", dureeMin: 20, dureeMax: 90 });
+  const sections = buildPrintSections(
+    [spanning],
+    config({ splitByDuration: true }),
+  );
+  expect(sections.map((s) => s.label)).toEqual([
+    "< 30 min",
+    "30-60 min",
+    "1-2 h",
   ]);
 });
 
-test("layoutColumns sorts by title length and weights columns when optimizing", () => {
-  const games = [
-    makeGame({ titre: "cccccc" }),
-    makeGame({ titre: "aa" }),
-    makeGame({ titre: "bbbb" }),
-  ];
-  const columns = layoutColumns(games, true);
-  expect(columns.flatMap((c) => c.games.map((g) => g.titre))).toEqual([
-    "aa",
-    "bbbb",
-    "cccccc",
+test("layoutColumns pads with empty columns when games are fewer than columns", () => {
+  const columns = layoutColumns([makeGame({ rowIndex: 0 })]);
+  expect(columns).toHaveLength(3);
+  expect(columns.map((c) => c.games.length)).toEqual([1, 0, 0]);
+});
+
+test("layoutColumns returns three empty columns for an empty list", () => {
+  const columns = layoutColumns([]);
+  expect(columns).toHaveLength(3);
+  expect(columns.every((c) => c.games.length === 0)).toBe(true);
+});
+
+test("columnCountFor uses two columns for rich and three otherwise", () => {
+  expect(columnCountFor("rich")).toBe(2);
+  expect(columnCountFor("normal")).toBe(3);
+  expect(columnCountFor("compact")).toBe(3);
+});
+
+test("layoutColumns honours the requested column count", () => {
+  const games = Array.from({ length: 8 }, (_, i) =>
+    makeGame({ titre: `game-${i}`, rowIndex: i }),
+  );
+  expect(layoutColumns(games, 2)).toHaveLength(2);
+  expect(layoutColumns(games, 2).flatMap((c) => c.games)).toHaveLength(8);
+});
+
+test("layoutColumns splits games into three balanced columns in order", () => {
+  const games = Array.from({ length: 9 }, (_, i) =>
+    makeGame({ titre: `game-${i}`, rowIndex: i }),
+  );
+  const columns = layoutColumns(games);
+  expect(columns).toHaveLength(3);
+  expect(columns.map((c) => c.games.length)).toEqual([3, 3, 3]);
+  expect(columns.flatMap((c) => c.games.map((g) => g.rowIndex))).toEqual([
+    0, 1, 2, 3, 4, 5, 6, 7, 8,
   ]);
-  expect(columns.map((c) => c.weight)).toEqual([2, 4, 6]);
+});
+
+test("layoutColumns never drops or duplicates games", () => {
+  const games = Array.from({ length: 40 }, (_, i) =>
+    makeGame({ titre: "x".repeat(1 + (i % 30)), rowIndex: i }),
+  );
+  const rows = layoutColumns(games).flatMap((c) =>
+    c.games.map((g) => g.rowIndex),
+  );
+  expect(rows).toHaveLength(40);
+  expect(new Set(rows).size).toBe(40);
 });

@@ -6,14 +6,16 @@ import {
   GameKind,
 } from "./filter";
 
-export type PrintRichness = "minimal" | "rich";
+export type PrintDensity = "rich" | "normal" | "compact";
 
 export type SoloFilter = "all" | "only" | "exclude";
 
 export type PrintConfig = {
-  richness: PrintRichness;
-  optimizeTitles: boolean;
+  density: PrintDensity;
   splitByType: boolean;
+  splitByCategory: boolean;
+  splitByTheme: boolean;
+  splitByMechanic: boolean;
   splitByDuration: boolean;
   splitByPlayers: boolean;
   solo: SoloFilter;
@@ -82,6 +84,21 @@ function joinLabel(parent: string, child: string): string {
   return parent ? `${parent} · ${child}` : child;
 }
 
+function splitByValues(
+  sections: PrintSection[],
+  values: (game: Game) => string[],
+): PrintSection[] {
+  return sections.flatMap((section) => {
+    const distinct = [
+      ...new Set(section.games.flatMap((game) => values(game))),
+    ].sort((a, b) => a.localeCompare(b, "fr"));
+    return distinct.map((value) => ({
+      label: joinLabel(section.label, value),
+      games: section.games.filter((game) => values(game).includes(value)),
+    }));
+  });
+}
+
 export function buildPrintSections(
   games: Game[],
   config: PrintConfig,
@@ -100,6 +117,18 @@ export function buildPrintSections(
     );
   }
 
+  if (config.splitByCategory) {
+    sections = splitByValues(sections, (game) => game.categories);
+  }
+
+  if (config.splitByTheme) {
+    sections = splitByValues(sections, (game) => game.themes);
+  }
+
+  if (config.splitByMechanic) {
+    sections = splitByValues(sections, (game) => game.mecanismes);
+  }
+
   if (config.splitByDuration) {
     sections = sections.flatMap((section) =>
       DURATION_BUCKETS.map((bucket) => ({
@@ -113,13 +142,17 @@ export function buildPrintSections(
 
   if (config.splitByPlayers) {
     sections = sections.flatMap((section) =>
-      playerCountsInSet(section.games).map((count) => ({
-        label: joinLabel(
-          section.label,
-          `${count} joueur${count > 1 ? "s" : ""}`,
-        ),
-        games: section.games.filter((game) => gameSupportsPlayers(game, count)),
-      })),
+      playerCountsInSet(section.games)
+        .filter((count) => !(config.solo === "exclude" && count === 1))
+        .map((count) => ({
+          label: joinLabel(
+            section.label,
+            `${count} joueur${count > 1 ? "s" : ""}`,
+          ),
+          games: section.games.filter((game) =>
+            gameSupportsPlayers(game, count),
+          ),
+        })),
     );
   }
 
@@ -128,23 +161,18 @@ export function buildPrintSections(
 
 export type PrintColumn = {
   games: Game[];
-  weight: number;
 };
 
-function titleLength(game: Game): number {
-  return game.titre.length + (game.sousTitre ? game.sousTitre.length + 3 : 0);
+export function columnCountFor(density: PrintDensity): number {
+  return density === "rich" ? 2 : COLUMN_COUNT;
 }
 
-export function layoutColumns(games: Game[], optimize: boolean): PrintColumn[] {
-  const ordered = optimize
-    ? [...games].sort((a, b) => titleLength(a) - titleLength(b))
-    : games;
-  const size = Math.max(1, Math.ceil(ordered.length / COLUMN_COUNT));
-  const columns: PrintColumn[] = [];
-  for (let index = 0; index < COLUMN_COUNT; index++) {
-    const slice = ordered.slice(index * size, (index + 1) * size);
-    const weight = optimize ? Math.max(1, ...slice.map(titleLength)) : 1;
-    columns.push({ games: slice, weight });
-  }
-  return columns;
+export function layoutColumns(
+  games: Game[],
+  columnCount: number = COLUMN_COUNT,
+): PrintColumn[] {
+  const size = Math.max(1, Math.ceil(games.length / columnCount));
+  return Array.from({ length: columnCount }, (_, index) => ({
+    games: games.slice(index * size, (index + 1) * size),
+  }));
 }

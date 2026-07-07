@@ -14,8 +14,7 @@ export function PrintDocument({ job }: Props) {
           games={section.games}
           summary={job.summary}
           label={section.label}
-          richness={job.config.richness}
-          optimize={job.config.optimizeTitles}
+          density={job.config.density}
         />
       ))}
     </>
