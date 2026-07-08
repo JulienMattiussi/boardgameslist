@@ -66,11 +66,15 @@ export function buildImportPlan(
   existing: Game[],
 ): ImportPlan {
   const byId = new Map<string, Game>();
+  const byBggId = new Map<string, Game>();
   const byEan = new Map<string, Game>();
   const byTitle = new Map<string, Game>();
   for (const game of existing) {
     if (game.myludoId) {
       byId.set(game.myludoId, game);
+    }
+    if (game.bggId) {
+      byBggId.set(game.bggId, game);
     }
     for (const ean of game.ean) {
       if (ean) {
@@ -92,6 +96,16 @@ export function buildImportPlan(
         incoming,
         existing: idMatch,
         conflicts: findConflicts(idMatch, incoming),
+      };
+    }
+    const bggMatch = incoming.bggId ? byBggId.get(incoming.bggId) : undefined;
+    if (bggMatch) {
+      return {
+        kind: "match",
+        matchedBy: "bgg_id",
+        incoming,
+        existing: bggMatch,
+        conflicts: findConflicts(bggMatch, incoming),
       };
     }
     const eanMatch = incoming.ean

@@ -93,7 +93,7 @@ test("BGG fetch by id fills the empty form fields", async () => {
   expect(screen.getByDisplayValue("Klaus Teuber")).toBeTruthy();
 });
 
-test("BGG fetch overwrites metadata of a manual game but keeps title and description", async () => {
+test("BGG fetch overwrites title and metadata of a manual game but keeps description", async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn().mockResolvedValue({
@@ -117,7 +117,7 @@ test("BGG fetch overwrites metadata of a manual game but keeps title and descrip
   await waitFor(() => {
     expect(screen.getByDisplayValue("Jeu de Cartes")).toBeTruthy();
   });
-  expect(screen.getByDisplayValue("Mon titre")).toBeTruthy();
+  expect(screen.getByDisplayValue("Catan")).toBeTruthy();
   expect(screen.getByDisplayValue("Ma description")).toBeTruthy();
   expect(screen.getByDisplayValue("https://img/catan.jpg")).toBeTruthy();
 });
@@ -142,6 +142,60 @@ test("keeps the Myludo id: shows it and sends it back on save", async () => {
   const body = JSON.parse(options.body as string);
   expect(body.myludoId).toBe("75231");
   expect(body.rowIndex).toBe(5);
+});
+
+test("BGG re-sync overwrites an already bgg-sourced game", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        game: { ...CATAN_GAME, categories: ["Jeu de Cartes"] },
+      }),
+    }) as Mock,
+  );
+
+  const game = makeGame({
+    source: "bgg",
+    titre: "Ancien titre",
+    categories: ["Vieux"],
+    image: "old.jpg",
+  });
+  render(<GameFormModal game={game} onClose={vi.fn()} onSaved={vi.fn()} />);
+  openBggWith("13");
+
+  await waitFor(() => {
+    expect(screen.getByDisplayValue("Catan")).toBeTruthy();
+  });
+  expect(screen.getByDisplayValue("Jeu de Cartes")).toBeTruthy();
+  expect(screen.getByDisplayValue("https://img/catan.jpg")).toBeTruthy();
+});
+
+test("BGG fetch only fills empty fields for a Myludo game", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        game: { ...CATAN_GAME, categories: ["Jeu de Cartes"] },
+      }),
+    }) as Mock,
+  );
+
+  const game = makeGame({
+    source: "myludo",
+    titre: "Titre Myludo",
+    categories: ["Categorie Myludo"],
+    image: "",
+  });
+  render(<GameFormModal game={game} onClose={vi.fn()} onSaved={vi.fn()} />);
+  openBggWith("13");
+
+  await waitFor(() => {
+    expect(screen.getByDisplayValue("https://img/catan.jpg")).toBeTruthy();
+  });
+  expect(screen.getByDisplayValue("Titre Myludo")).toBeTruthy();
+  expect(screen.getByDisplayValue("Categorie Myludo")).toBeTruthy();
 });
 
 test("BGG fetch surfaces an error when the request fails", async () => {

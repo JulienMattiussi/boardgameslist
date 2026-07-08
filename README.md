@@ -40,9 +40,10 @@ route serveur avec un compte de service.
   éditeurs, et un bouton **Récupérer depuis BGG** (BoardGameGeek) qui préremplit
   les champs vides (image, catégories, mécaniques, auteurs...) à partir de l'URL
   ou de l'id BGG collé.
-- 📥 **Import Myludo** : lit indifféremment **CSV, JSON ou XLSX**, dédoublonne en
-  cascade (`myludo_id` puis `ean` puis titre), et propose une relecture
-  pas-à-pas où l'on arbitre chaque conflit champ par champ.
+- 📥 **Import de collection** : un seul champ fichier, le format est détecté
+  automatiquement (export **Myludo** CSV/JSON/XLSX ou collection **BoardGameGeek**
+  CSV). Dédoublonnage en cascade (`myludo_id` / `bgg_id` / `ean` / titre), relecture
+  pas-à-pas des conflits, et injection des `bgg_id` manquants au passage.
 
 ## 🧱 Stack
 

@@ -67,11 +67,37 @@ Ordre des colonnes A -> W (cle machine snake_case) :
   (feuille entiere "sauf `A2:W`") pour empecher un humain de casser le mapping ;
   le compte de service doit rester dans les autorises des plages protegees.
 
-## 4. Import Myludo (rappels non evidents)
+## 4. Import (Myludo & BGG)
 
-Logique pure et testee dans [../src/lib/myludo/](../src/lib/myludo/). Points a ne
-pas re-decouvrir :
+Logique pure et testee dans [../src/lib/myludo/](../src/lib/myludo/) et
+[../src/lib/bgg/import.ts](../src/lib/bgg/import.ts) ; dispatcher
+[../src/lib/import.ts](../src/lib/import.ts). Points a ne pas re-decouvrir :
 
+- **Import transparent** : un seul bouton/champ fichier. `parseCollection` detecte
+  la source par l'en-tete (`objectid`+`objectname` -> BGG ; sinon Myludo). JSON/XLSX
+  = toujours Myludo (BGG n'exporte qu'en CSV). Les deux produisent des
+  `MyludoImport` (type partage, avec `bggId`).
+- **Cascade de dedup unifiee** `myludo_id -> bgg_id -> ean -> titre` : chaque source
+  ne remplit que son propre id, donc le meme code gere les deux. Un import BGG
+  **injecte le bgg_id** sur les correspondances (meme un doublon identique par
+  titre est reecrit juste pour poser le bgg_id).
+- **Regles de source a l'import** : import Myludo -> tout passe `myludo`. Import BGG
+  -> nouveau/`manuel` passent `bgg`, mais un jeu deja `myludo` **reste myludo**
+  (on injecte juste le bgg_id). Idem pour l'enrichissement par bouton BGG
+  (`applyBgg`) : `manuel` -> `bgg`, `myludo` conserve.
+- **Enrichissement auto (phase 2)** : quand l'import contient des jeux a `bgg_id`,
+  `ImportModal.apply` va chercher les donnees riches via `/api/bgg/thing`
+  (geekitems + dynamicinfo) **avant** l'ecriture, en throttlant
+  (`ENRICH_CONCURRENCY`) et en fusionnant image/categories/themes/mecaniques/
+  auteurs/editeur/note dans les cases vides (`enrichFields`). Fait AVANT l'apply
+  unique pour eviter le probleme de rowIndex des jeux crees. Barre de progression +
+  bouton "Passer" (annule le reste et ecrit ce qui est deja enrichi). Pas de
+  resync separe : l'enrichissement n'a lieu qu'a l'import.
+- **BGG CSV** : delimite `;` (comme Myludo). Colonnes utiles : `objectid`,
+  `objectname`, `rating` (perso), `average` (moyenne), `min/maxplayers`,
+  `min/maxplaytime`, `bggrecagerange` ("10+"), `yearpublished`, `barcode` (EAN),
+  `acquisitiondate`, `invlocation`. On ne garde que les jeux **possedes** (`own=1`).
+  Pas d'image/categories/mecaniques dans le CSV (viennent de geekitems).
 - **Format-agnostique** : CSV / JSON / XLSX passent par des readers -> meme forme
   `MyludoRaw` -> `MyludoImport`. La modale de relecture ne depend pas du format.
 - **Validation** : un export doit avoir les 3 colonnes stables `ID`, `EAN`,
@@ -135,11 +161,15 @@ Logique dans [../src/lib/bgg/](../src/lib/bgg/). Points a ne pas re-decouvrir :
   (`.../filters:strip_icc()/pic.png`) ; en CSS il **faut** `url("...")` avec
   guillemets, sinon les `()` cassent le parsing (fond vide). Cf. `GameCard.cover`
   et `PrintList.thumb`.
-- **Regle d'ecrasement (`applyBgg` dans `GameFormModal`)** : si le jeu est
-  `source: "manuel"`, BGG **ecrase** les champs (quand BGG a une valeur), **sauf
-  titre, sous-titre et description qui sont gardes s'ils existaient**. Si le jeu
-  vient de Myludo/BGG, BGG **remplit seulement les cases vides**. Dans tous les cas
-  l'editeur voit les champs changer avant d'enregistrer.
+- **Regle d'ecrasement (`applyBgg` dans `GameFormModal`)** : le bouton ecrase les
+  champs (quand BGG a une valeur, **titre compris**) **sauf si le jeu est
+  `source: "myludo"`** (la, remplissage des cases vides seulement, titre Myludo
+  conserve). Donc `manuel` ET `bgg` (re-sync) ecrasent : condition
+  `prev.source !== "myludo"`, PAS `=== "manuel"` (sinon un jeu deja synchronise -
+  devenu `bgg` - ne se mettrait plus jamais a jour). Seuls **sous-titre et
+  description** restent gardes s'ils existaient. `manuel` passe `bgg` a la 1re
+  synchro. (L'enrichissement de masse a l'import ne touche PAS le titre, cf.
+  `enrichFields` : seul le bouton par jeu peut reecrire un titre.)
 
 ## 5. Decisions actees (ne pas re-debattre)
 

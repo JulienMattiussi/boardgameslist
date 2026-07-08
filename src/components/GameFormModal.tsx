@@ -153,16 +153,17 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
 
   const applyBgg = (bgg: BggGame) => {
     setForm((prev) => {
-      const manual = prev.source === "manuel";
+      const overwrite = prev.source !== "myludo";
       const fill = (key: string, value: string) =>
         prev[key].trim() !== "" ? prev[key] : value;
       const over = (key: string, value: string) =>
         value !== "" ? value : prev[key];
-      const put = manual ? over : fill;
+      const put = overwrite ? over : fill;
       return {
         ...prev,
         bggId: bgg.bggId,
-        titre: fill("titre", bgg.titre),
+        source: prev.source === "manuel" ? "bgg" : prev.source,
+        titre: put("titre", bgg.titre),
         description: fill("description", bgg.description),
         edition: put("edition", num(bgg.annee)),
         joueursMin: put("joueursMin", num(bgg.joueursMin)),

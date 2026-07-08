@@ -32,14 +32,18 @@ function isEmpty(value: unknown): boolean {
   return String(value).trim() === "";
 }
 
-export function newFields(incoming: MyludoImport): Record<string, unknown> {
-  return { ...incoming, source: "myludo" };
+export function newFields(
+  incoming: MyludoImport,
+  source: string,
+): Record<string, unknown> {
+  return { ...incoming, source };
 }
 
 export function mergeFields(
   existing: Game,
   incoming: MyludoImport,
   replace: string[],
+  source: string,
 ): Record<string, unknown> {
   const current = existing as unknown as Record<string, unknown>;
   const next = incoming as unknown as Record<string, unknown>;
@@ -50,7 +54,8 @@ export function mergeFields(
     }
   }
   fields.myludoId = existing.myludoId || incoming.myludoId;
-  fields.source = "myludo";
+  fields.bggId = existing.bggId || incoming.bggId;
+  fields.source = source;
   fields.rowIndex = existing.rowIndex;
   return fields;
 }

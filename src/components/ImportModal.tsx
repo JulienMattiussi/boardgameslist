@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Game } from "@/lib/games";
+import { BggGame } from "@/lib/bgg/map";
 import { MyludoImport, ImportPlan } from "@/lib/myludo/types";
-import { formatFromName, parseMyludo } from "@/lib/myludo/parse";
+import { parseCollection, formatFromName, ImportSource } from "@/lib/import";
 import { buildImportPlan } from "@/lib/myludo/dedup";
 import {
   compareGames,
@@ -32,10 +33,13 @@ type Decision = {
   shortcut: Side | "both" | null;
 };
 
-const MATCH_LABELS: Record<"myludo_id" | "ean", string> = {
+const MATCH_LABELS: Record<"myludo_id" | "bgg_id" | "ean", string> = {
   myludo_id: "identifiant Myludo",
+  bgg_id: "identifiant BGG",
   ean: "code-barres (EAN)",
 };
+
+const ENRICH_CONCURRENCY = 4;
 
 function conflictLabels(rows: CardRow[]): string[] {
   return rows
@@ -43,9 +47,55 @@ function conflictLabels(rows: CardRow[]): string[] {
     .map((row) => row.label);
 }
 
+function isEmptyList(value: unknown): boolean {
+  return !Array.isArray(value) || value.length === 0;
+}
+
+function isEmptyText(value: unknown): boolean {
+  return value === undefined || value === null || String(value).trim() === "";
+}
+
+function enrichFields(fields: Record<string, unknown>, bgg: BggGame): void {
+  if (isEmptyList(fields.categories)) fields.categories = bgg.categories;
+  if (isEmptyList(fields.themes)) fields.themes = bgg.themes;
+  if (isEmptyList(fields.mecanismes)) fields.mecanismes = bgg.mecanismes;
+  if (isEmptyList(fields.auteurs)) fields.auteurs = bgg.auteurs;
+  if (isEmptyList(fields.editeur)) fields.editeur = bgg.editeur;
+  if (isEmptyText(fields.image)) fields.image = bgg.image;
+  if (isEmptyText(fields.description)) fields.description = bgg.description;
+  if (fields.noteMoyenne === undefined || fields.noteMoyenne === null) {
+    fields.noteMoyenne = bgg.noteMoyenne;
+  }
+}
+
+async function runPool<T>(
+  items: T[],
+  limit: number,
+  worker: (item: T) => Promise<void>,
+): Promise<void> {
+  let index = 0;
+  const runners = Array.from(
+    { length: Math.min(limit, items.length) },
+    async () => {
+      while (index < items.length) {
+        await worker(items[index++]);
+      }
+    },
+  );
+  await Promise.all(runners);
+}
+
+async function fetchBggGame(bggId: string): Promise<BggGame | null> {
+  const data = await fetch(`/api/bgg/thing?id=${encodeURIComponent(bggId)}`)
+    .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null);
+  return (data?.game as BggGame | undefined) ?? null;
+}
+
 export function ImportModal({ games, onClose, onImported }: Props) {
   const [fileName, setFileName] = useState("");
   const [imports, setImports] = useState<MyludoImport[] | null>(null);
+  const [source, setSource] = useState<ImportSource>("myludo");
   const [parseError, setParseError] = useState("");
   const [plan, setPlan] = useState<ImportPlan | null>(null);
   const [busy, setBusy] = useState(false);
@@ -53,6 +103,9 @@ export function ImportModal({ games, onClose, onImported }: Props) {
   const [skipNew, setSkipNew] = useState<Set<number>>(new Set());
   const [step, setStep] = useState(0);
   const [decisions, setDecisions] = useState<Map<number, Decision>>(new Map());
+  const [enrichTotal, setEnrichTotal] = useState(0);
+  const [enrichDone, setEnrichDone] = useState(0);
+  const cancelEnrich = useRef(false);
 
   async function onPick(file: File | null) {
     setFileName(file?.name ?? "");
@@ -68,7 +121,9 @@ export function ImportModal({ games, onClose, onImported }: Props) {
     }
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
-      setImports(parseMyludo(format, bytes));
+      const parsed = parseCollection(format, bytes);
+      setSource(parsed.source);
+      setImports(parsed.imports);
     } catch (err) {
       setParseError(`Fichier illisible : ${(err as Error).message}`);
     }
@@ -81,6 +136,20 @@ export function ImportModal({ games, onClose, onImported }: Props) {
         next.delete(key);
       } else {
         next.add(key);
+      }
+      return next;
+    });
+  }
+
+  function toggleSkipAll(indices: number[], skip: boolean) {
+    setSkipNew((prev) => {
+      const next = new Set(prev);
+      for (const index of indices) {
+        if (skip) {
+          next.add(index);
+        } else {
+          next.delete(index);
+        }
       }
       return next;
     });
@@ -131,6 +200,13 @@ export function ImportModal({ games, onClose, onImported }: Props) {
     return labels.every((label) => label in decision.picks);
   }
 
+  const resolveSource = (existingSource?: string): string => {
+    if (source === "myludo") {
+      return "myludo";
+    }
+    return existingSource === "myludo" ? "myludo" : "bgg";
+  };
+
   function buildOperations(current: ImportPlan): Operation[] {
     const operations: Operation[] = [];
     current.entries.forEach((entry, index) => {
@@ -138,17 +214,21 @@ export function ImportModal({ games, onClose, onImported }: Props) {
         if (!skipNew.has(index)) {
           operations.push({
             rowIndex: null,
-            fields: newFields(entry.incoming),
+            fields: newFields(entry.incoming, resolveSource()),
           });
         }
         return;
       }
       const rows = compareGames(entry.existing, entry.incoming);
       if (entry.kind === "match" && isIdenticalDuplicate(rows)) {
-        if (entry.existing.source !== "myludo") {
+        const target = resolveSource(entry.existing.source);
+        const injectsId =
+          (entry.incoming.bggId !== "" && entry.existing.bggId === "") ||
+          (entry.incoming.myludoId !== "" && entry.existing.myludoId === "");
+        if (entry.existing.source !== target || injectsId) {
           operations.push({
             rowIndex: entry.existing.rowIndex,
-            fields: mergeFields(entry.existing, entry.incoming, []),
+            fields: mergeFields(entry.existing, entry.incoming, [], target),
           });
         }
         return;
@@ -158,7 +238,10 @@ export function ImportModal({ games, onClose, onImported }: Props) {
         return;
       }
       if (decision.keepBoth) {
-        operations.push({ rowIndex: null, fields: newFields(entry.incoming) });
+        operations.push({
+          rowIndex: null,
+          fields: newFields(entry.incoming, resolveSource()),
+        });
         return;
       }
       if (decision.shortcut === "existing") {
@@ -172,7 +255,12 @@ export function ImportModal({ games, onClose, onImported }: Props) {
         .flatMap((row) => row.keys);
       operations.push({
         rowIndex: entry.existing.rowIndex,
-        fields: mergeFields(entry.existing, entry.incoming, replaceKeys),
+        fields: mergeFields(
+          entry.existing,
+          entry.incoming,
+          replaceKeys,
+          resolveSource(entry.existing.source),
+        ),
       });
     });
     return operations;
@@ -184,10 +272,32 @@ export function ImportModal({ games, onClose, onImported }: Props) {
     }
     setBusy(true);
     setError("");
+    const operations = buildOperations(plan);
+
+    const enrichable = operations.filter(
+      (op) => typeof op.fields.bggId === "string" && op.fields.bggId !== "",
+    );
+    if (enrichable.length > 0) {
+      cancelEnrich.current = false;
+      setEnrichTotal(enrichable.length);
+      setEnrichDone(0);
+      await runPool(enrichable, ENRICH_CONCURRENCY, async (op) => {
+        if (cancelEnrich.current) {
+          return;
+        }
+        const game = await fetchBggGame(String(op.fields.bggId));
+        if (game) {
+          enrichFields(op.fields, game);
+        }
+        setEnrichDone((done) => done + 1);
+      });
+      setEnrichTotal(0);
+    }
+
     const res = await fetch("/api/import/apply", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ operations: buildOperations(plan) }),
+      body: JSON.stringify({ operations }),
     });
     setBusy(false);
     if (res.ok) {
@@ -279,11 +389,11 @@ export function ImportModal({ games, onClose, onImported }: Props) {
         className={styles.dialog}
         role="dialog"
         aria-modal="true"
-        aria-label="Importer depuis Myludo"
+        aria-label="Importer une collection"
         onClick={(event) => event.stopPropagation()}
       >
         <header className={styles.header}>
-          <h2 className={styles.title}>Importer depuis Myludo</h2>
+          <h2 className={styles.title}>Importer une collection</h2>
           <IconButton label="Fermer" variant="ghost" onClick={onClose}>
             <CloseIcon />
           </IconButton>
@@ -293,7 +403,8 @@ export function ImportModal({ games, onClose, onImported }: Props) {
           {!plan && (
             <div className={styles.pick}>
               <p className={styles.hint}>
-                Fichier export Myludo au format CSV, JSON ou XLSX.
+                Export Myludo (CSV, JSON ou XLSX) ou collection BoardGameGeek
+                (CSV). Le format est detecte automatiquement.
               </p>
               <label className={styles.filePick}>
                 <input
@@ -309,8 +420,8 @@ export function ImportModal({ games, onClose, onImported }: Props) {
               </label>
               {imports && (
                 <p className={styles.valid}>
-                  Fichier valide : {imports.length}{" "}
-                  {imports.length > 1 ? "jeux" : "jeu"} detecte
+                  Fichier {source === "bgg" ? "BoardGameGeek" : "Myludo"} :{" "}
+                  {imports.length} {imports.length > 1 ? "jeux" : "jeu"} detecte
                   {imports.length > 1 ? "s" : ""}.
                 </p>
               )}
@@ -324,6 +435,22 @@ export function ImportModal({ games, onClose, onImported }: Props) {
                 <section>
                   <h3 className={styles.section}>
                     Nouveaux jeux ({news.length})
+                    {news.length > 0 && (
+                      <button
+                        type="button"
+                        className={styles.selectAll}
+                        onClick={() =>
+                          toggleSkipAll(
+                            news.map(({ index }) => index),
+                            news.every(({ index }) => !skipNew.has(index)),
+                          )
+                        }
+                      >
+                        {news.every(({ index }) => !skipNew.has(index))
+                          ? "Tout decocher"
+                          : "Tout cocher"}
+                      </button>
+                    )}
                   </h3>
                   <p className={styles.hint}>
                     {news.length === 0
@@ -501,7 +628,21 @@ export function ImportModal({ games, onClose, onImported }: Props) {
         </div>
 
         <footer className={styles.footer}>
-          <Button variant="secondary" onClick={onClose}>
+          {enrichTotal > 0 && (
+            <span className={styles.progress}>
+              Enrichissement BGG {enrichDone}/{enrichTotal}
+              <button
+                type="button"
+                className={styles.skip}
+                onClick={() => {
+                  cancelEnrich.current = true;
+                }}
+              >
+                Passer
+              </button>
+            </span>
+          )}
+          <Button variant="secondary" onClick={onClose} disabled={busy}>
             Annuler
           </Button>
           {plan ? (
@@ -510,7 +651,9 @@ export function ImportModal({ games, onClose, onImported }: Props) {
               disabled={busy || !reviewComplete || importCount === 0}
             >
               {busy
-                ? "Import..."
+                ? enrichTotal > 0
+                  ? "Enrichissement..."
+                  : "Import..."
                 : `Importer ${importCount} ${importCount > 1 ? "jeux" : "jeu"}`}
             </Button>
           ) : (

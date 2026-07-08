@@ -284,7 +284,7 @@ export function Catalog({ games }: Props) {
           )}
           {canEdit && (
             <IconButton
-              label="Importer depuis Myludo"
+              label="Importer une collection"
               onClick={() => setImportOpen(true)}
             >
               <UploadIcon />

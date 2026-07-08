@@ -75,6 +75,7 @@ export function rawToImport(raw: MyludoRaw): MyludoImport {
   const duree = parseRange(asString(raw["Durée"]));
   return {
     myludoId: asString(raw["ID"]),
+    bggId: "",
     ean: asList(raw["EAN"]),
     titre: asString(raw["Titre"]),
     sousTitre: asString(raw["Sous-titre"]),

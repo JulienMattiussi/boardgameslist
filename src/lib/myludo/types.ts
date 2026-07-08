@@ -6,6 +6,7 @@ export type MyludoRaw = Record<string, string | string[]>;
 
 export type MyludoImport = {
   myludoId: string;
+  bggId: string;
   ean: string[];
   titre: string;
   sousTitre: string;
@@ -38,7 +39,7 @@ export type PlanEntry =
   | { kind: "new"; incoming: MyludoImport }
   | {
       kind: "match";
-      matchedBy: "myludo_id" | "ean";
+      matchedBy: "myludo_id" | "bgg_id" | "ean";
       incoming: MyludoImport;
       existing: Game;
       conflicts: FieldConflict[];

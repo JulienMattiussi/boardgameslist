@@ -44,6 +44,7 @@ function makeGame(overrides: Partial<Game>): Game {
 function makeImport(overrides: Partial<MyludoImport>): MyludoImport {
   return {
     myludoId: "",
+    bggId: "",
     ean: [],
     titre: "",
     sousTitre: "",
@@ -201,6 +202,22 @@ test("buildImportPlan runs the dedup cascade id -> ean -> title", () => {
   expect(plan.entries[2]).toMatchObject({ matchedBy: "title" });
 });
 
+test("buildImportPlan matches by bgg_id (BGG import injects the id)", () => {
+  const existing = [makeGame({ titre: "Catan", bggId: "13" })];
+  const plan = buildImportPlan(
+    [
+      makeImport({ bggId: "13", titre: "Catan (renamed)" }),
+      makeImport({ bggId: "999", titre: "Nouveau" }),
+    ],
+    existing,
+  );
+  expect(plan.entries[0]).toMatchObject({
+    kind: "match",
+    matchedBy: "bgg_id",
+  });
+  expect(plan.entries[1].kind).toBe("new");
+});
+
 test("findConflicts flags differing non-empty fields, fills empty ones silently", () => {
   const existing = makeGame({
     myludoId: "1",
@@ -234,7 +251,7 @@ test("mergeFields fills empty cells, keeps conflicts unless replaced, attaches i
     age: 12,
     editeur: ["Iello"],
   });
-  const kept = mergeFields(existing, incoming, []);
+  const kept = mergeFields(existing, incoming, [], "myludo");
   expect(kept.age).toBe(10);
   expect(kept.editeur).toEqual(["Iello"]);
   expect(kept.myludoId).toBe("99");
@@ -243,7 +260,7 @@ test("mergeFields fills empty cells, keeps conflicts unless replaced, attaches i
   expect(kept.image).toBe("cover.png");
   expect(kept.description).toBe("note perso");
 
-  const replaced = mergeFields(existing, incoming, ["age"]);
+  const replaced = mergeFields(existing, incoming, ["age"], "myludo");
   expect(replaced.age).toBe(12);
 });
 
@@ -294,7 +311,10 @@ test("compareGames treats an EAN differing only by a leading zero as identical",
 });
 
 test("newFields tags the import as myludo", () => {
-  const fields = newFields(makeImport({ titre: "Gamma", myludoId: "7" }));
+  const fields = newFields(
+    makeImport({ titre: "Gamma", myludoId: "7" }),
+    "myludo",
+  );
   expect(fields.titre).toBe("Gamma");
   expect(fields.source).toBe("myludo");
 });

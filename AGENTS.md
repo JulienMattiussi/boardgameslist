@@ -20,13 +20,15 @@ renders one page per section; pure logic in `src/lib/print.ts`), editor auth
 modal), and Myludo import (CSV/JSON/XLSX -> dedup cascade -> step-by-step review
 modal). The legacy MDX blog + Netlify CMS have been removed.
 
-BGG (BoardGameGeek) enrichment is starting: a `bgg_id` sheet column (W), pure JSON
-mappers in `src/lib/bgg/`, and a "Recuperer depuis BGG" panel in `GameFormModal`
-that prefills empty fields from a pasted BGG url/id. The official XML APIs (v1 & v2)
-are Cloudflare-blocked (401); enrichment uses BGG's internal JSON
-(`api.geekdo.com/api/geekitems?objectid=`) via the server route `/api/bgg/thing`,
-**by id only** (name search is blocked too). See
-[docs/reference.md](docs/reference.md) section 4b before touching it.
+BGG (BoardGameGeek) integration: a `bgg_id` sheet column (W), pure JSON mappers in
+`src/lib/bgg/`, a "Recuperer depuis BGG" panel in `GameFormModal` (prefill from a
+pasted url/id), and a **BGG collection CSV import** merged into the transparent
+import flow (`src/lib/import.ts` auto-detects Myludo vs BGG; unified dedup cascade
+`myludo_id -> bgg_id -> ean -> titre`). The official XML APIs (v1 & v2) are
+Cloudflare-blocked (401); data uses BGG's internal JSON
+(`api.geekdo.com/api/geekitems` + `/dynamicinfo` for the rating) via the server
+route `/api/bgg/thing`, **by id only** (name search is blocked too). See
+[docs/reference.md](docs/reference.md) sections 4 and 4b before touching it.
 
 Path alias: `@/*` maps to `src/*`.
 
