@@ -93,6 +93,14 @@ test("parseGeekItem returns null when there is no item", () => {
   expect(parseGeekItem({ item: {} })).toBeNull();
 });
 
+test("parseGeekItem falls back to playingtime when min/max playtime are absent", () => {
+  const game = parseGeekItem({
+    item: { objectid: 5, primaryname: { name: "X" }, playingtime: "45" },
+  });
+  expect(game?.dureeMin).toBe(45);
+  expect(game?.dureeMax).toBe(45);
+});
+
 test("parseRating reads and rounds the average from dynamicinfo", () => {
   expect(parseRating({ item: { stats: { average: "7.09049" } } })).toBe(7.1);
   expect(parseRating({ item: { stats: { average: "0" } } })).toBeNull();

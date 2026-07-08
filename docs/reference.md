@@ -95,9 +95,15 @@ Logique pure et testee dans [../src/lib/myludo/](../src/lib/myludo/) et
   resync separe : l'enrichissement n'a lieu qu'a l'import.
 - **BGG CSV** : delimite `;` (comme Myludo). Colonnes utiles : `objectid`,
   `objectname`, `rating` (perso), `average` (moyenne), `min/maxplayers`,
-  `min/maxplaytime`, `bggrecagerange` ("10+"), `yearpublished`, `barcode` (EAN),
-  `acquisitiondate`, `invlocation`. On ne garde que les jeux **possedes** (`own=1`).
-  Pas d'image/categories/mecaniques dans le CSV (viennent de geekitems).
+  `min/maxplaytime`, `yearpublished`, `barcode` (EAN), `acquisitiondate`,
+  `invlocation`. On ne garde que les jeux **possedes** (`own=1`). Pas
+  d'image/categories/mecaniques dans le CSV (viennent de geekitems).
+- **L'age NE vient PAS du CSV** : le CSV n'a que `bggrecagerange` (age
+  **recommande par la communaute**, ex "10+"), different du `minage` **editeur**
+  (la boite, ex 8) que renvoie geekitems et que pose le bouton "Recuperer depuis
+  BGG". Pour rester coherent, l'import laisse `age` vide et c'est
+  l'enrichissement geekitems (`enrichFields`) qui le remplit -> meme source (age
+  editeur) partout.
 - **Format-agnostique** : CSV / JSON / XLSX passent par des readers -> meme forme
   `MyludoRaw` -> `MyludoImport`. La modale de relecture ne depend pas du format.
 - **Validation** : un export doit avoir les 3 colonnes stables `ID`, `EAN`,

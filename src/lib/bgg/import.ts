@@ -19,11 +19,6 @@ function toRating(value: string): number | null {
     : null;
 }
 
-function ageFromRange(value: string): number | null {
-  const match = value.match(/\d+/);
-  return match ? toInt(match[0]) : null;
-}
-
 export function isBggCollection(header: string[]): boolean {
   const columns = new Set(header.map((column) => column.trim().toLowerCase()));
   return columns.has("objectid") && columns.has("objectname");
@@ -47,7 +42,7 @@ export function parseBggCollection(text: string): MyludoImport[] {
     maxplayers: at("maxplayers"),
     minplaytime: at("minplaytime"),
     maxplaytime: at("maxplaytime"),
-    agerange: at("bggrecagerange"),
+    playingtime: at("playingtime"),
     yearpublished: at("yearpublished"),
     barcode: at("barcode"),
     acquisitiondate: at("acquisitiondate"),
@@ -63,6 +58,7 @@ export function parseBggCollection(text: string): MyludoImport[] {
     .filter((row) => columns.own < 0 || cell(row, columns.own) === "1")
     .map((row) => {
       const ean = cell(row, columns.barcode);
+      const playtime = toInt(cell(row, columns.playingtime));
       return {
         myludoId: "",
         bggId: cell(row, columns.objectid),
@@ -72,9 +68,9 @@ export function parseBggCollection(text: string): MyludoImport[] {
         edition: toInt(cell(row, columns.yearpublished)),
         joueursMin: toInt(cell(row, columns.minplayers)),
         joueursMax: toInt(cell(row, columns.maxplayers)),
-        dureeMin: toInt(cell(row, columns.minplaytime)),
-        dureeMax: toInt(cell(row, columns.maxplaytime)),
-        age: ageFromRange(cell(row, columns.agerange)),
+        dureeMin: toInt(cell(row, columns.minplaytime)) ?? playtime,
+        dureeMax: toInt(cell(row, columns.maxplaytime)) ?? playtime,
+        age: null,
         categories: [],
         themes: [],
         mecanismes: [],

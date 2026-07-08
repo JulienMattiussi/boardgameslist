@@ -29,7 +29,7 @@ test("parseBggCollection maps rows and keeps only owned games", () => {
   expect(catan.joueursMax).toBe(4);
   expect(catan.dureeMin).toBe(60);
   expect(catan.dureeMax).toBe(120);
-  expect(catan.age).toBe(10);
+  expect(catan.age).toBeNull();
   expect(catan.edition).toBe(1995);
   expect(catan.ean).toEqual([]);
   expect(catan.dateAcquisition).toBe("2024-01-15");
@@ -38,8 +38,16 @@ test("parseBggCollection maps rows and keeps only owned games", () => {
   const bomb = games[1];
   expect(bomb.notePerso).toBeNull();
   expect(bomb.noteMoyenne).toBe(6.6);
-  expect(bomb.age).toBe(6);
+  expect(bomb.age).toBeNull();
   expect(bomb.ean).toEqual(["3760052143861"]);
+});
+
+test("parseBggCollection falls back to playingtime for duration", () => {
+  const csv =
+    "objectid;objectname;own;playingtime;minplaytime;maxplaytime\n5;X;1;45;;";
+  const [game] = parseBggCollection(csv);
+  expect(game.dureeMin).toBe(45);
+  expect(game.dureeMax).toBe(45);
 });
 
 test("parseCollection routes a BGG CSV to the bgg source", () => {

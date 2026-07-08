@@ -235,14 +235,15 @@ export function parseGeekItem(json: unknown): BggGame | null {
   const links = item.links;
   const primary = item.primaryname as JsonNode | undefined;
   const bggCategories = linkNames(links, "boardgamecategory");
+  const playtime = num(item.playingtime);
   return {
     bggId: str(item.objectid),
     titre: str(primary?.name),
     annee: num(item.yearpublished),
     joueursMin: num(item.minplayers),
     joueursMax: num(item.maxplayers),
-    dureeMin: num(item.minplaytime),
-    dureeMax: num(item.maxplaytime),
+    dureeMin: num(item.minplaytime) ?? playtime,
+    dureeMax: num(item.maxplaytime) ?? playtime,
     age: num(item.minage),
     categories: mapCategories(bggCategories),
     themes: mapThemes(bggCategories),

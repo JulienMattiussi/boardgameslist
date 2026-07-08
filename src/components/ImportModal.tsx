@@ -63,6 +63,9 @@ function enrichFields(fields: Record<string, unknown>, bgg: BggGame): void {
   if (isEmptyList(fields.editeur)) fields.editeur = bgg.editeur;
   if (isEmptyText(fields.image)) fields.image = bgg.image;
   if (isEmptyText(fields.description)) fields.description = bgg.description;
+  if (fields.age === undefined || fields.age === null) {
+    fields.age = bgg.age;
+  }
   if (fields.noteMoyenne === undefined || fields.noteMoyenne === null) {
     fields.noteMoyenne = bgg.noteMoyenne;
   }
