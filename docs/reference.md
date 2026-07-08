@@ -79,8 +79,18 @@ Logique pure et testee dans [../src/lib/myludo/](../src/lib/myludo/) et
   `MyludoImport` (type partage, avec `bggId`).
 - **Cascade de dedup unifiee** `myludo_id -> bgg_id -> ean -> titre` : chaque source
   ne remplit que son propre id, donc le meme code gere les deux. Un import BGG
-  **injecte le bgg_id** sur les correspondances (meme un doublon identique par
-  titre est reecrit juste pour poser le bgg_id).
+  **injecte le bgg_id** sur les correspondances : doublon identique par titre
+  reecrit juste pour poser l'id ; et **"garder l'actuel" n'ignore PLUS le jeu** :
+  il garde les valeurs existantes (conflits + non-vides) mais complete les cases
+  vides et injecte le bgg_id (`mergeFields` avec `replace: []`). Donc "tout garder
+  l'actuel" sert a rapatrier tous les ids sans toucher aux donnees.
+- **Actions groupees** (modale de relecture) : "Tout cocher/decocher" sur les
+  nouveaux jeux ; "Tout : garder l'actuel / garder l'import / dupliquer" sous les
+  boutons unitaires de l'assistant (`applyAllShortcut`).
+- **Faux conflits neutralises** (`compare.ts`) : titre compare via `normalizeTitle`
+  (meme normalisation que le matching : casse/accents/ponctuation) ; plages
+  joueurs/duree non signalees si l'import est **contenu** dans l'existant
+  (`rangeContains`) ; EAN via `canonEan` (zeros de tete).
 - **Regles de source a l'import** : import Myludo -> tout passe `myludo`. Import BGG
   -> nouveau/`manuel` passent `bgg`, mais un jeu deja `myludo` **reste myludo**
   (on injecte juste le bgg_id). Idem pour l'enrichissement par bouton BGG

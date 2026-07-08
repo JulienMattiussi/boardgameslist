@@ -218,6 +218,37 @@ test("buildImportPlan matches by bgg_id (BGG import injects the id)", () => {
   expect(plan.entries[1].kind).toBe("new");
 });
 
+test("compareGames ignores title case/accents/punctuation and contained ranges", () => {
+  const existing = makeGame({
+    titre: "Egizia : Shifting Sands",
+    dureeMin: 15,
+    dureeMax: 30,
+    joueursMin: 2,
+    joueursMax: 6,
+  });
+  const incoming = makeImport({
+    titre: "Egizia: Shifting Sands",
+    dureeMin: 15,
+    dureeMax: 15,
+    joueursMin: 2,
+    joueursMax: 6,
+  });
+  const rows = compareGames(existing, incoming);
+  const at = (label: string) => rows.find((r) => r.label === label)?.status;
+  expect(at("Titre")).toBe("same");
+  expect(at("Duree")).toBe("same");
+  expect(at("Joueurs")).toBe("same");
+});
+
+test("compareGames still flags a duration the import widens", () => {
+  const existing = makeGame({ titre: "X", dureeMin: 15, dureeMax: 15 });
+  const incoming = makeImport({ titre: "X", dureeMin: 15, dureeMax: 30 });
+  const duree = compareGames(existing, incoming).find(
+    (r) => r.label === "Duree",
+  );
+  expect(duree?.status).toBe("conflict");
+});
+
 test("findConflicts flags differing non-empty fields, fills empty ones silently", () => {
   const existing = makeGame({
     myludoId: "1",

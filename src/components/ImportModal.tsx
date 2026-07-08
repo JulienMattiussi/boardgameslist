@@ -178,6 +178,27 @@ export function ImportModal({ games, onClose, onImported }: Props) {
     });
   }
 
+  function applyAllShortcut(
+    items: { index: number; rows: CardRow[] }[],
+    choice: Side | "both",
+  ) {
+    setDecisions((prev) => {
+      const next = new Map(prev);
+      for (const item of items) {
+        if (choice === "both") {
+          next.set(item.index, { keepBoth: true, picks: {}, shortcut: "both" });
+        } else {
+          const picks: Record<string, Side> = {};
+          conflictLabels(item.rows).forEach((label) => {
+            picks[label] = choice;
+          });
+          next.set(item.index, { keepBoth: false, picks, shortcut: choice });
+        }
+      }
+      return next;
+    });
+  }
+
   function pickField(index: number, label: string, side: Side) {
     setDecisions((prev) => {
       const next = new Map(prev);
@@ -245,9 +266,6 @@ export function ImportModal({ games, onClose, onImported }: Props) {
           rowIndex: null,
           fields: newFields(entry.incoming, resolveSource()),
         });
-        return;
-      }
-      if (decision.shortcut === "existing") {
         return;
       }
       const replaceKeys = rows
@@ -548,53 +566,87 @@ export function ImportModal({ games, onClose, onImported }: Props) {
                     </div>
                     <div className={styles.wizard}>
                       <div className={styles.choice}>
-                        <label>
-                          <input
-                            type="radio"
-                            name={`validate-${current.index}`}
-                            checked={decision?.shortcut === "existing"}
-                            onChange={() =>
-                              applyShortcut(
-                                current.index,
-                                currentConflicts,
-                                "existing",
-                              )
-                            }
-                          />
-                          Garder l&apos;actuel
-                        </label>
-                        <label>
-                          <input
-                            type="radio"
-                            name={`validate-${current.index}`}
-                            checked={decision?.shortcut === "import"}
-                            onChange={() =>
-                              applyShortcut(
-                                current.index,
-                                currentConflicts,
-                                "import",
-                              )
-                            }
-                          />
-                          Garder l&apos;import
-                        </label>
-                        {canKeepBoth && (
-                          <label>
-                            <input
-                              type="radio"
-                              name={`validate-${current.index}`}
-                              checked={decision?.shortcut === "both"}
-                              onChange={() =>
-                                applyShortcut(
-                                  current.index,
-                                  currentConflicts,
-                                  "both",
-                                )
+                        <div className={styles.choiceGroup}>
+                          <div className={styles.units}>
+                            <label>
+                              <input
+                                type="radio"
+                                name={`validate-${current.index}`}
+                                checked={decision?.shortcut === "existing"}
+                                onChange={() =>
+                                  applyShortcut(
+                                    current.index,
+                                    currentConflicts,
+                                    "existing",
+                                  )
+                                }
+                              />
+                              Garder l&apos;actuel
+                            </label>
+                            <label>
+                              <input
+                                type="radio"
+                                name={`validate-${current.index}`}
+                                checked={decision?.shortcut === "import"}
+                                onChange={() =>
+                                  applyShortcut(
+                                    current.index,
+                                    currentConflicts,
+                                    "import",
+                                  )
+                                }
+                              />
+                              Garder l&apos;import
+                            </label>
+                            {canKeepBoth && (
+                              <label>
+                                <input
+                                  type="radio"
+                                  name={`validate-${current.index}`}
+                                  checked={decision?.shortcut === "both"}
+                                  onChange={() =>
+                                    applyShortcut(
+                                      current.index,
+                                      currentConflicts,
+                                      "both",
+                                    )
+                                  }
+                                />
+                                Garder les deux
+                              </label>
+                            )}
+                          </div>
+                          <div className={styles.bulk}>
+                            <span className={styles.bulkLabel}>Tout :</span>
+                            <button
+                              type="button"
+                              className={styles.bulkBtn}
+                              onClick={() =>
+                                applyAllShortcut(toValidate, "existing")
                               }
-                            />
-                            Garder les deux
-                          </label>
-                        )}
+                            >
+                              garder l&apos;actuel
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.bulkBtn}
+                              onClick={() =>
+                                applyAllShortcut(toValidate, "import")
+                              }
+                            >
+                              garder l&apos;import
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.bulkBtn}
+                              onClick={() =>
+                                applyAllShortcut(toValidate, "both")
+                              }
+                            >
+                              dupliquer
+                            </button>
+                          </div>
+                        </div>
                         <div className={styles.nav}>
                           <Button
                             variant="secondary"

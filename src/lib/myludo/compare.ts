@@ -1,5 +1,6 @@
 import { Game } from "../games";
 import { MyludoImport } from "./types";
+import { normalizeTitle } from "./dedup";
 
 type FieldStatus = "same" | "fill" | "conflict" | "existing-only";
 
@@ -43,18 +44,33 @@ function canonEan(value: string): string {
     .join(", ");
 }
 
+function rangeContains(
+  outerMin: number | null,
+  outerMax: number | null,
+  innerMin: number | null,
+  innerMax: number | null,
+): boolean {
+  const lowOuter = outerMin ?? Number.NEGATIVE_INFINITY;
+  const highOuter = outerMax ?? Number.POSITIVE_INFINITY;
+  const lowInner = innerMin ?? Number.NEGATIVE_INFINITY;
+  const highInner = innerMax ?? Number.POSITIVE_INFINITY;
+  return lowOuter <= lowInner && highInner <= highOuter;
+}
+
 const FIELDS: {
   label: string;
   keys: string[];
   existing: (game: Game) => string;
   incoming: (incoming: MyludoImport) => string;
   canon?: (value: string) => string;
+  compat?: (game: Game, incoming: MyludoImport) => boolean;
 }[] = [
   {
     label: "Titre",
     keys: ["titre"],
     existing: (g) => g.titre,
     incoming: (i) => i.titre,
+    canon: normalizeTitle,
   },
   {
     label: "Sous-titre",
@@ -73,12 +89,16 @@ const FIELDS: {
     keys: ["joueursMin", "joueursMax"],
     existing: (g) => range(g.joueursMin, g.joueursMax),
     incoming: (i) => range(i.joueursMin, i.joueursMax),
+    compat: (g, i) =>
+      rangeContains(g.joueursMin, g.joueursMax, i.joueursMin, i.joueursMax),
   },
   {
     label: "Duree",
     keys: ["dureeMin", "dureeMax"],
     existing: (g) => range(g.dureeMin, g.dureeMax),
     incoming: (i) => range(i.dureeMin, i.dureeMax),
+    compat: (g, i) =>
+      rangeContains(g.dureeMin, g.dureeMax, i.dureeMin, i.dureeMax),
   },
   {
     label: "Age",
@@ -177,12 +197,16 @@ export function compareGames(
     const right = field.incoming(incoming);
     const canonLeft = field.canon ? field.canon(left) : left;
     const canonRight = field.canon ? field.canon(right) : right;
+    let rowStatus = status(canonLeft, canonRight);
+    if (rowStatus === "conflict" && field.compat?.(existing, incoming)) {
+      rowStatus = "same";
+    }
     return {
       label: field.label,
       keys: field.keys,
       existing: left,
       incoming: right,
-      status: status(canonLeft, canonRight),
+      status: rowStatus,
     };
   });
 }

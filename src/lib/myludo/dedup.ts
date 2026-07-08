@@ -21,7 +21,7 @@ const CONFLICT_FIELDS = [
   "emplacement",
 ] as const;
 
-function normalizeTitle(title: string): string {
+export function normalizeTitle(title: string): string {
   return title
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
