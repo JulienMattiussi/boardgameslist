@@ -23,6 +23,7 @@ export type Game = {
   image: string;
   source: string;
   description: string;
+  bggId: string;
   rowIndex: number;
 };
 
@@ -59,6 +60,7 @@ const COLUMNS: ColumnSpec[] = [
   { header: "image", key: "image", kind: "string" },
   { header: "source", key: "source", kind: "string" },
   { header: "description", key: "description", kind: "string" },
+  { header: "bgg_id", key: "bggId", kind: "string" },
 ];
 
 function parseNumber(raw: string): number | null {

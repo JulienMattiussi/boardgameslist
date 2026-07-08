@@ -34,12 +34,17 @@ donnees, regles d'import), voir [plan-migration.md](plan-migration.md).
 
 ## 3. Colonnes du Sheet et typage
 
-Ordre des colonnes A -> V (cle machine snake_case) :
+Ordre des colonnes A -> W (cle machine snake_case) :
 
 `myludo_id`, `ean`, `titre`, `sous_titre`, `edition`, `joueurs_min`,
 `joueurs_max`, `duree_min`, `duree_max`, `age`, `categories`, `themes`,
 `mecanismes`, `editeur`, `auteurs`, `note_perso`, `note_moyenne`,
-`date_acquisition`, `emplacement`, `image`, `source`, `description`.
+`date_acquisition`, `emplacement`, `image`, `source`, `description`, `bgg_id`.
+
+- **`bgg_id` (colonne W)** : l'en-tete `BGG_ID` doit exister dans la ligne 1 de
+  l'onglet Jeux. Le mapping lecture se fait par nom d'en-tete : sans cet en-tete,
+  l'id BGG est ecrit en colonne W mais **jamais relu** (donc non persistant).
+  `LAST_COLUMN` dans `sheets.ts` doit rester aligne (`W`).
 
 - **Ligne d'en-tete EN MAJUSCULES** (`MYLUDO_ID`, `TITRE`, ...) ; le code passe
   l'en-tete en minuscules pour retrouver la cle. **Exception** : la colonne `ean`
@@ -59,7 +64,7 @@ Ordre des colonnes A -> V (cle machine snake_case) :
   locale ; dates en ISO). NE PAS relire en `FORMATTED_VALUE` puis reecrire (un
   `6,6` fr casserait le parse).
 - **Protection recommandee** : proteger la ligne 1 (en-tetes) et la structure
-  (feuille entiere "sauf `A2:V`") pour empecher un humain de casser le mapping ;
+  (feuille entiere "sauf `A2:W`") pour empecher un humain de casser le mapping ;
   le compte de service doit rester dans les autorises des plages protegees.
 
 ## 4. Import Myludo (rappels non evidents)
@@ -74,6 +79,11 @@ pas re-decouvrir :
 - **Dedoublonnage en cascade** `myludo_id` -> `ean` -> titre normalise ; les
   correspondances par titre sont toujours confirmees a la main ; jamais
   d'ecrasement silencieux d'une saisie manuelle.
+- **Tout jeu importe passe en `source: "myludo"`** : `mergeFields` le force pour
+  les jeux completes/fusionnes ; un doublon **identique** dont la source n'est pas
+  deja `myludo` est quand meme reecrit (via `mergeFields` sans changement de donnee)
+  juste pour flipper la source. Seuls les jeux non presents dans l'import gardent
+  leur source.
 - **EAN** : le JSON stocke l'EAN en nombre et perd le zero de tete (UPC-A vs
   EAN-13) ; `compareGames` retire les zeros de tete avant comparaison pour eviter
   un faux conflit.
@@ -82,6 +92,54 @@ pas re-decouvrir :
 - **Autocomplete** (`taxonomies.ts` : CATEGORIES / THEMES / MECANISMES /
   EDITEURS) genere depuis les exports ; casse Myludo verbatim sauf apostrophes des
   categories.
+
+## 4b. Integration BoardGameGeek (BGG)
+
+Logique dans [../src/lib/bgg/](../src/lib/bgg/). Points a ne pas re-decouvrir :
+
+- **Les API XML officielles sont BLOQUEES** : `boardgamegeek.com/xmlapi2/*` (v2) ET
+  `boardgamegeek.com/xmlapi/*` (v1) renvoient **HTTP 401** (Cloudflare), quel que
+  soit l'hote (`boardgamegeek.com`, `api.geekdo.com`), le User-Agent, l'IP (sandbox
+  datacenter ET navigateur de l'editeur). Ce n'est pas un souci de cle : la doc
+  n'exige aucune auth, c'est de l'anti-bot. **Ne pas re-tester ces endpoints.**
+- **Ce qui marche : l'API interne JSON du site**
+  `api.geekdo.com/api/geekitems?objecttype=thing&objectid=ID` -> 200 JSON, meme
+  depuis une IP datacenter (donc OK sur Vercel). On l'appelle **cote serveur**
+  (route `/api/bgg/thing`, gated editeur) pour eviter le CORS et garder l'endpoint
+  non officiel hors du client. Non documentee => peut casser un jour.
+- **Recuperation par ID uniquement, pas de recherche par nom** : l'endpoint de
+  recherche du site (`boardgamegeek.com/search/boardgame?q=...`, JSON) est protege
+  Cloudflare (403 hors navigateur same-origin ; cross-origin bloque). L'editeur
+  colle donc l'URL ou l'id BGG (`parseBggId` extrait le numero d'une URL
+  `.../boardgame/13/...` ou d'un id brut).
+- **La note moyenne vient d'un 2e endpoint** : `geekitems` ne la contient pas ;
+  `api.geekdo.com/api/dynamicinfo?objecttype=thing&objectid=ID` -> `item.stats.average`
+  (et `avgweight` = complexite, non stockee). `getGameById` appelle les deux en
+  parallele (dynamicinfo best-effort : si echec, note = null).
+- **Mapping geekitems -> Game** (`map.ts`, `parseGeekItem`) : les valeurs BGG sont
+  en **anglais** et traduites en FR via des dictionnaires (`translate`, drop des
+  valeurs sans equivalent) :
+  - `boardgamecategory` alimente **deux** champs : `categories` (via
+    `BGG_CATEGORY_TO_FR`, categories "format" : Card Game, Dice...) ET `themes`
+    (via `BGG_CATEGORY_TO_THEME`, categories "thematiques" : Fantasy->Fantasy,
+    Economic->Économie, World War II->Guerre...).
+  - `boardgamemechanic` -> `mecanismes` via `BGG_MECHANIC_TO_FR` (Dice
+    Rolling->Jet De Dés, Take That->Dans Ta Face...).
+  - `boardgamedesigner`->auteurs, `boardgamepublisher`->editeur (**cap a 3**),
+    `imageurl`->image, `primaryname.name`->titre, `min/maxplayers`,
+    `min/maxplaytime`, `minage`, `yearpublished`->edition. String a coercer ;
+    `0`/absent -> null. Description = HTML nettoye (entites + balises).
+  - Les dictionnaires sont **best-effort** (les valeurs BGG inconnues sont
+    droppees) : a etendre au fil de l'eau selon la collection.
+- **Images geekdo** : les URLs contiennent des parentheses
+  (`.../filters:strip_icc()/pic.png`) ; en CSS il **faut** `url("...")` avec
+  guillemets, sinon les `()` cassent le parsing (fond vide). Cf. `GameCard.cover`
+  et `PrintList.thumb`.
+- **Regle d'ecrasement (`applyBgg` dans `GameFormModal`)** : si le jeu est
+  `source: "manuel"`, BGG **ecrase** les champs (quand BGG a une valeur), **sauf
+  titre, sous-titre et description qui sont gardes s'ils existaient**. Si le jeu
+  vient de Myludo/BGG, BGG **remplit seulement les cases vides**. Dans tous les cas
+  l'editeur voit les champs changer avant d'enregistrer.
 
 ## 5. Decisions actees (ne pas re-debattre)
 

@@ -18,7 +18,6 @@ import {
   PinIcon,
   ImageIcon,
   BarcodeIcon,
-  HashIcon,
   PlayersIcon,
   ClockIcon,
   AgeIcon,
@@ -28,6 +27,7 @@ import { TagAutocomplete } from "./TagAutocomplete";
 import { Field, IconComponent } from "./ui/Field";
 import { Button } from "./ui/Button";
 import { IconButton } from "./ui/IconButton";
+import { BggGame } from "@/lib/bgg/map";
 import controls from "./ui/controls.module.css";
 import styles from "./GameFormModal.module.css";
 
@@ -56,14 +56,6 @@ const FIELDS: FieldDef[] = [
     hint: "separes par ;",
   },
   { key: "emplacement", label: "Emplacement", type: "text", Icon: PinIcon },
-  { key: "image", label: "Image (URL)", type: "text", Icon: ImageIcon },
-  {
-    key: "ean",
-    label: "EAN",
-    type: "text",
-    Icon: BarcodeIcon,
-    hint: "separes par ;",
-  },
 ];
 
 const EMPTY_FORM: FormState = {
@@ -88,6 +80,7 @@ const EMPTY_FORM: FormState = {
   image: "",
   ean: "",
   myludoId: "",
+  bggId: "",
   description: "",
 };
 
@@ -122,6 +115,7 @@ function gameToForm(game: Game | null): FormState {
     image: game.image,
     ean: game.ean.join("; "),
     myludoId: game.myludoId,
+    bggId: game.bggId,
   };
 }
 
@@ -131,6 +125,10 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
   const [error, setError] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [bggOpen, setBggOpen] = useState(false);
+  const [bggInput, setBggInput] = useState("");
+  const [bggLoading, setBggLoading] = useState(false);
+  const [bggError, setBggError] = useState("");
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -144,6 +142,67 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
 
   const set = (key: string, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
+  const openBgg = () => {
+    setBggOpen(true);
+    setBggError("");
+    if (bggInput === "" && form.bggId !== "") {
+      setBggInput(form.bggId);
+    }
+  };
+
+  const applyBgg = (bgg: BggGame) => {
+    setForm((prev) => {
+      const manual = prev.source === "manuel";
+      const fill = (key: string, value: string) =>
+        prev[key].trim() !== "" ? prev[key] : value;
+      const over = (key: string, value: string) =>
+        value !== "" ? value : prev[key];
+      const put = manual ? over : fill;
+      return {
+        ...prev,
+        bggId: bgg.bggId,
+        titre: fill("titre", bgg.titre),
+        description: fill("description", bgg.description),
+        edition: put("edition", num(bgg.annee)),
+        joueursMin: put("joueursMin", num(bgg.joueursMin)),
+        joueursMax: put("joueursMax", num(bgg.joueursMax)),
+        dureeMin: put("dureeMin", num(bgg.dureeMin)),
+        dureeMax: put("dureeMax", num(bgg.dureeMax)),
+        age: put("age", num(bgg.age)),
+        categories: put("categories", bgg.categories.join("; ")),
+        themes: put("themes", bgg.themes.join("; ")),
+        mecanismes: put("mecanismes", bgg.mecanismes.join("; ")),
+        auteurs: put("auteurs", bgg.auteurs.join("; ")),
+        editeur: put("editeur", bgg.editeur.join("; ")),
+        noteMoyenne: put("noteMoyenne", num(bgg.noteMoyenne)),
+        image: put("image", bgg.image),
+      };
+    });
+  };
+
+  const fetchFromBgg = async () => {
+    if (bggInput.trim() === "") {
+      setBggError("Colle une URL ou un id BoardGameGeek.");
+      return;
+    }
+    setBggLoading(true);
+    setBggError("");
+    try {
+      const res = await fetch(
+        `/api/bgg/thing?id=${encodeURIComponent(bggInput)}`,
+      );
+      const data = await res.json();
+      if (!res.ok || !data.game) {
+        throw new Error();
+      }
+      applyBgg(data.game as BggGame);
+      setBggOpen(false);
+    } catch {
+      setBggError("Recuperation BGG indisponible.");
+    }
+    setBggLoading(false);
+  };
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -219,6 +278,66 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
           </IconButton>
         </header>
 
+        <div className={styles.bggBar}>
+          {!bggOpen ? (
+            <div className={styles.bggClosed}>
+              <Button variant="secondary" onClick={openBgg}>
+                Recuperer depuis BGG
+              </Button>
+              {form.bggId && (
+                <a
+                  className={styles.bggLink}
+                  href={`https://boardgamegeek.com/boardgame/${form.bggId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Fiche BGG #{form.bggId}
+                </a>
+              )}
+              <span className={styles.myludoTag}>
+                Myludo {form.myludoId ? `#${form.myludoId}` : "-"}
+              </span>
+            </div>
+          ) : (
+            <div className={styles.bggPanel}>
+              <div className={styles.bggSearch}>
+                <input
+                  className={controls.input}
+                  value={bggInput}
+                  placeholder="URL ou id BoardGameGeek (ex: 13)"
+                  onChange={(event) => setBggInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void fetchFromBgg();
+                    }
+                  }}
+                  autoFocus
+                />
+                <Button
+                  variant="secondary"
+                  onClick={() => void fetchFromBgg()}
+                  disabled={bggLoading}
+                >
+                  {bggLoading ? "..." : "Recuperer"}
+                </Button>
+                <IconButton
+                  label="Fermer BGG"
+                  variant="ghost"
+                  onClick={() => setBggOpen(false)}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </div>
+              <p className={styles.bggHint}>
+                Colle l&apos;URL de la fiche BGG du jeu (ou son id). Les champs
+                vides seront remplis.
+              </p>
+              {bggError && <p className={styles.error}>{bggError}</p>}
+            </div>
+          )}
+        </div>
+
         <form className={styles.form} onSubmit={handleSubmit}>
           <Field label="Titre *" Icon={TagIcon} className={styles.span2}>
             <input
@@ -247,13 +366,26 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
             </div>
           </Field>
 
-          <Field label="Source" Icon={DatabaseIcon}>
-            <input
-              className={`${controls.input} ${controls.readonly}`}
-              value={form.source}
-              readOnly
-            />
-          </Field>
+          <div className={styles.duo}>
+            <Field
+              label="Source"
+              Icon={DatabaseIcon}
+              className={styles.duoItem}
+            >
+              <input
+                className={`${controls.input} ${controls.readonly}`}
+                value={form.source}
+                readOnly
+              />
+            </Field>
+            <Field
+              label="Date d'acquisition"
+              Icon={CalendarIcon}
+              className={styles.duoItem}
+            >
+              {textInput("dateAcquisition", "date")}
+            </Field>
+          </div>
 
           <div className={styles.duo}>
             <Field
@@ -339,22 +471,13 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
             </Field>
           ))}
 
-          <div className={styles.duo}>
-            <Field
-              label="Date d'acquisition"
-              Icon={CalendarIcon}
-              className={styles.duoItem}
-            >
-              {textInput("dateAcquisition", "date")}
-            </Field>
-            <Field label="Myludo ID" Icon={HashIcon} className={styles.duoItem}>
-              <input
-                className={`${controls.input} ${controls.readonly}`}
-                value={form.myludoId}
-                readOnly
-              />
-            </Field>
-          </div>
+          <Field label="Image (URL)" Icon={ImageIcon} className={styles.span2}>
+            {textInput("image")}
+          </Field>
+
+          <Field label="EAN" Icon={BarcodeIcon} hint="separes par ;">
+            {textInput("ean")}
+          </Field>
 
           <Field label="Description" Icon={TextIcon} className={styles.wide}>
             <textarea

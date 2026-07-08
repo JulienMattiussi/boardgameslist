@@ -35,6 +35,7 @@ function makeGame(overrides: Partial<Game>): Game {
     image: "",
     source: "manuel",
     description: "",
+    bggId: "",
     rowIndex: 0,
     ...overrides,
   };

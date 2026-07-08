@@ -37,7 +37,9 @@ route serveur avec un compte de service.
   l'impression du navigateur). C'est le livrable central.
 - ✏️ **Édition en ligne** (éditeurs connectés) : ajout, modification, suppression
   via une modale, avec autocomplétion des catégories / thèmes / mécanismes /
-  éditeurs.
+  éditeurs, et un bouton **Récupérer depuis BGG** (BoardGameGeek) qui préremplit
+  les champs vides (image, catégories, mécaniques, auteurs...) à partir de l'URL
+  ou de l'id BGG collé.
 - 📥 **Import Myludo** : lit indifféremment **CSV, JSON ou XLSX**, dédoublonne en
   cascade (`myludo_id` puis `ean` puis titre), et propose une relecture
   pas-à-pas où l'on arbitre chaque conflit champ par champ.

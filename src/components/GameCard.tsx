@@ -90,6 +90,14 @@ export function GameCard({ game, onEdit, detailed }: Props) {
       </div>
 
       <div className={styles.body}>
+        {detailed && game.image && (
+          <div
+            className={styles.cover}
+            style={{ backgroundImage: `url("${game.image}")` }}
+            role="img"
+            aria-label={game.titre}
+          />
+        )}
         <div className={styles.meta}>
           {players && (
             <MetaItem Icon={PlayersIcon} value={players} label="joueurs" />

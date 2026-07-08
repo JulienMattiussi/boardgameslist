@@ -138,6 +138,16 @@
   flex: 1;
 }
 
+.cover {
+  width: 100%;
+  height: 160px;
+  border-radius: var(--radius);
+  background-color: var(--color-bg);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;

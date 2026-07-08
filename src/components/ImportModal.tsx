@@ -145,6 +145,12 @@ export function ImportModal({ games, onClose, onImported }: Props) {
       }
       const rows = compareGames(entry.existing, entry.incoming);
       if (entry.kind === "match" && isIdenticalDuplicate(rows)) {
+        if (entry.existing.source !== "myludo") {
+          operations.push({
+            rowIndex: entry.existing.rowIndex,
+            fields: mergeFields(entry.existing, entry.incoming, []),
+          });
+        }
         return;
       }
       const decision = decisions.get(index);

@@ -76,7 +76,7 @@ export function PrintList({ games, summary, label, density }: Props) {
                           className={styles.thumb}
                           style={
                             game.image
-                              ? { backgroundImage: `url(${game.image})` }
+                              ? { backgroundImage: `url("${game.image}")` }
                               : undefined
                           }
                         />
