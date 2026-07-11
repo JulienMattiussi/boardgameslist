@@ -36,13 +36,23 @@ function makeGame(overrides: Partial<Game>): Game {
   };
 }
 
-function headers(container: HTMLElement): string[] {
-  return Array.from(container.querySelectorAll("th")).map(
-    (th) => th.textContent ?? "",
-  );
+function headerLabels(container: HTMLElement): string[] {
+  const head = container.querySelector(".head");
+  return head
+    ? Array.from(head.children).map((child) => child.textContent ?? "")
+    : [];
 }
 
-test("PrintList normal renders three columns with the base headers only", () => {
+function columnCount(container: HTMLElement): string {
+  const columns = container.querySelector(".columns") as HTMLElement | null;
+  return columns?.style.columnCount ?? "";
+}
+
+function gameEntries(container: HTMLElement): number {
+  return container.querySelectorAll(".entry:not(.head)").length;
+}
+
+test("PrintList normal flows three columns with the base headers only", () => {
   const { container } = render(
     <PrintList
       games={[makeGame({ titre: "A", rowIndex: 0 })]}
@@ -50,14 +60,14 @@ test("PrintList normal renders three columns with the base headers only", () => 
       density="normal"
     />,
   );
-  expect(container.querySelectorAll("table")).toHaveLength(3);
-  const th = headers(container);
-  expect(th).toContain("Titre");
-  expect(th).not.toContain("Age");
-  expect(th).not.toContain("Note");
+  expect(columnCount(container)).toBe("3");
+  const labels = headerLabels(container);
+  expect(labels).toContain("Titre");
+  expect(labels).not.toContain("Age");
+  expect(labels).not.toContain("Note");
 });
 
-test("PrintList rich uses two columns, adds Age and Note, an image placeholder and meta lines", () => {
+test("PrintList rich uses a single column, adds Age and Note, an image placeholder and meta lines", () => {
   const game = makeGame({
     titre: "A",
     rowIndex: 0,
@@ -71,14 +81,30 @@ test("PrintList rich uses two columns, adds Age and Note, an image placeholder a
   const { container } = render(
     <PrintList games={[game]} summary="" density="rich" />,
   );
-  expect(container.querySelectorAll("table")).toHaveLength(2);
-  const th = headers(container);
-  expect(th).toContain("Age");
-  expect(th).toContain("Note");
+  expect(columnCount(container)).toBe("1");
+  const labels = headerLabels(container);
+  expect(labels).toContain("Age");
+  expect(labels).toContain("Note");
   expect(container.querySelectorAll(".thumb").length).toBeGreaterThan(0);
   expect(container.textContent).toContain("Cartes");
   expect(container.textContent).toContain("Draft");
   expect(container.textContent).toContain("Auteur X");
+});
+
+test("PrintList rich renders the cover as an img so it loads while the sheet is hidden", () => {
+  const game = makeGame({
+    titre: "A",
+    rowIndex: 0,
+    image: "https://img/example.jpg",
+  });
+  const { container } = render(
+    <PrintList games={[game]} summary="" density="rich" />,
+  );
+  const image = container.querySelector(
+    "img[data-print-image]",
+  ) as HTMLImageElement | null;
+  expect(image).not.toBeNull();
+  expect(image?.getAttribute("src")).toBe("https://img/example.jpg");
 });
 
 test("PrintList compact marks the sheet as compact", () => {
@@ -90,7 +116,7 @@ test("PrintList compact marks the sheet as compact", () => {
     />,
   );
   expect(container.querySelectorAll(".compact")).toHaveLength(1);
-  expect(container.querySelectorAll("table")).toHaveLength(3);
+  expect(columnCount(container)).toBe("3");
 });
 
 test("PrintList renders a section label and an empty list without crashing", () => {
@@ -103,5 +129,5 @@ test("PrintList renders a section label and an empty list without crashing", () 
     />,
   );
   expect(container.textContent).toContain("2 joueurs");
-  expect(container.querySelectorAll("tbody tr")).toHaveLength(0);
+  expect(gameEntries(container)).toBe(0);
 });

@@ -136,10 +136,32 @@ export function Catalog({ games }: Props) {
     if (!printJob) {
       return;
     }
+    let cancelled = false;
     const onAfterPrint = () => setPrintJob(null);
     window.addEventListener("afterprint", onAfterPrint);
-    window.print();
-    return () => window.removeEventListener("afterprint", onAfterPrint);
+
+    const images = Array.from(
+      document.querySelectorAll<HTMLImageElement>("img[data-print-image]"),
+    );
+    const settled = (image: HTMLImageElement) =>
+      image.complete
+        ? Promise.resolve()
+        : new Promise<void>((resolve) => {
+            image.addEventListener("load", () => resolve(), { once: true });
+            image.addEventListener("error", () => resolve(), { once: true });
+          });
+    const safety = new Promise<void>((resolve) => setTimeout(resolve, 8000));
+
+    Promise.race([Promise.all(images.map(settled)), safety]).then(() => {
+      if (!cancelled) {
+        window.print();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("afterprint", onAfterPrint);
+    };
   }, [printJob]);
 
   return (

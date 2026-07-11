@@ -5,7 +5,6 @@ import {
   playerCountsInSet,
   buildPrintSections,
   columnCountFor,
-  layoutColumns,
   PrintConfig,
 } from "../print";
 
@@ -250,51 +249,8 @@ test("splitByDuration places a game spanning buckets on several pages", () => {
   ]);
 });
 
-test("layoutColumns pads with empty columns when games are fewer than columns", () => {
-  const columns = layoutColumns([makeGame({ rowIndex: 0 })]);
-  expect(columns).toHaveLength(3);
-  expect(columns.map((c) => c.games.length)).toEqual([1, 0, 0]);
-});
-
-test("layoutColumns returns three empty columns for an empty list", () => {
-  const columns = layoutColumns([]);
-  expect(columns).toHaveLength(3);
-  expect(columns.every((c) => c.games.length === 0)).toBe(true);
-});
-
-test("columnCountFor uses two columns for rich and three otherwise", () => {
-  expect(columnCountFor("rich")).toBe(2);
+test("columnCountFor uses a single column for rich and three otherwise", () => {
+  expect(columnCountFor("rich")).toBe(1);
   expect(columnCountFor("normal")).toBe(3);
   expect(columnCountFor("compact")).toBe(3);
-});
-
-test("layoutColumns honours the requested column count", () => {
-  const games = Array.from({ length: 8 }, (_, i) =>
-    makeGame({ titre: `game-${i}`, rowIndex: i }),
-  );
-  expect(layoutColumns(games, 2)).toHaveLength(2);
-  expect(layoutColumns(games, 2).flatMap((c) => c.games)).toHaveLength(8);
-});
-
-test("layoutColumns splits games into three balanced columns in order", () => {
-  const games = Array.from({ length: 9 }, (_, i) =>
-    makeGame({ titre: `game-${i}`, rowIndex: i }),
-  );
-  const columns = layoutColumns(games);
-  expect(columns).toHaveLength(3);
-  expect(columns.map((c) => c.games.length)).toEqual([3, 3, 3]);
-  expect(columns.flatMap((c) => c.games.map((g) => g.rowIndex))).toEqual([
-    0, 1, 2, 3, 4, 5, 6, 7, 8,
-  ]);
-});
-
-test("layoutColumns never drops or duplicates games", () => {
-  const games = Array.from({ length: 40 }, (_, i) =>
-    makeGame({ titre: "x".repeat(1 + (i % 30)), rowIndex: i }),
-  );
-  const rows = layoutColumns(games).flatMap((c) =>
-    c.games.map((g) => g.rowIndex),
-  );
-  expect(rows).toHaveLength(40);
-  expect(new Set(rows).size).toBe(40);
 });

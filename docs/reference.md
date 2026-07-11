@@ -175,8 +175,14 @@ Logique dans [../src/lib/bgg/](../src/lib/bgg/). Points a ne pas re-decouvrir :
     droppees) : a etendre au fil de l'eau selon la collection.
 - **Images geekdo** : les URLs contiennent des parentheses
   (`.../filters:strip_icc()/pic.png`) ; en CSS il **faut** `url("...")` avec
-  guillemets, sinon les `()` cassent le parsing (fond vide). Cf. `GameCard.cover`
-  et `PrintList.thumb`.
+  guillemets, sinon les `()` cassent le parsing (fond vide). Cf. `GameCard.cover`.
+- **Vignettes de l'impression riche** : rendues en `<img data-print-image>` (pas
+  en `background-image`). Une image de fond CSS n'est pas chargee tant que
+  l'element est `display:none`, or la feuille d'impression l'est a l'ecran : les
+  vignettes ne se chargeaient jamais avant l'impression (sauf si deja en cache via
+  la vue "Plus d'infos"). Un `<img>` se charge meme sous un ancetre masque, et
+  l'effet d'impression dans `Catalog` **attend** que ces images soient chargees
+  (avec un garde-fou de 8 s) avant d'appeler `window.print()`.
 - **Regle d'ecrasement (`applyBgg` dans `GameFormModal`)** : le bouton ecrase les
   champs (quand BGG a une valeur, **titre compris**) **sauf si le jeu est
   `source: "myludo"`** (la, remplissage des cases vides seulement, titre Myludo

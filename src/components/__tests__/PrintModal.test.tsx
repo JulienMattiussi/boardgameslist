@@ -43,7 +43,12 @@ const shortTitles = Array.from({ length: 60 }, (_, i) =>
   makeGame({ titre: "abc", rowIndex: i, joueursMin: 2, joueursMax: 4 }),
 );
 
-test("PrintModal preview renders three columns and reacts to compact density", () => {
+function firstPreviewColumnCount(container: HTMLElement): string {
+  const columns = container.querySelector(".pageColumns") as HTMLElement | null;
+  return columns?.style.columnCount ?? "";
+}
+
+test("PrintModal preview flows three columns and reacts to compact density", () => {
   const { container } = render(
     <PrintModal
       games={shortTitles}
@@ -54,17 +59,17 @@ test("PrintModal preview renders three columns and reacts to compact density", (
   );
 
   expect(screen.getByText(/Apercu/)).toBeTruthy();
-  expect(container.querySelectorAll(".pageColumn").length).toBe(3);
+  expect(firstPreviewColumnCount(container)).toBe("3");
   expect(container.querySelectorAll(".pageColumnsCompact").length).toBe(0);
 
   fireEvent.click(screen.getByText("Compacte"));
 
   expect(container.querySelectorAll(".pageColumnsCompact").length).toBe(1);
-  expect(container.querySelectorAll(".pageColumn").length).toBe(3);
+  expect(firstPreviewColumnCount(container)).toBe("3");
 
   fireEvent.click(screen.getByText("Riche"));
 
-  expect(container.querySelectorAll(".pageColumn").length).toBe(2);
+  expect(firstPreviewColumnCount(container)).toBe("1");
 });
 
 test("PrintModal remembers options across mounts", () => {

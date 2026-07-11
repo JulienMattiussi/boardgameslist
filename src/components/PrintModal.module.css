@@ -149,23 +149,10 @@
 }
 
 .pageColumns {
-  display: flex;
-  gap: 0.3rem;
+  column-gap: 0.3rem;
+  column-fill: balance;
   flex: 1;
   min-height: 150px;
-  align-items: flex-start;
-}
-
-.pageColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 0.28rem;
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.pageColumnsCompact .pageColumn {
-  gap: 0.12rem;
 }
 
 .pageColumnsCompact .rowMain {
@@ -176,13 +163,19 @@
   display: flex;
   gap: 0.15rem;
   align-items: flex-start;
+  margin-bottom: 0.28rem;
+  break-inside: avoid;
+}
+
+.pageColumnsCompact .row {
+  margin-bottom: 0.12rem;
 }
 
 .rowThumb {
   flex: none;
-  width: 6px;
-  height: 6px;
-  border-radius: 1px;
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
   background: var(--color-accent-soft);
 }
 

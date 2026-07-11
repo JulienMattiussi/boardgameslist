@@ -159,20 +159,6 @@ export function buildPrintSections(
   return sections.filter((section) => section.games.length > 0);
 }
 
-export type PrintColumn = {
-  games: Game[];
-};
-
 export function columnCountFor(density: PrintDensity): number {
-  return density === "rich" ? 2 : COLUMN_COUNT;
-}
-
-export function layoutColumns(
-  games: Game[],
-  columnCount: number = COLUMN_COUNT,
-): PrintColumn[] {
-  const size = Math.max(1, Math.ceil(games.length / columnCount));
-  return Array.from({ length: columnCount }, (_, index) => ({
-    games: games.slice(index * size, (index + 1) * size),
-  }));
+  return density === "rich" ? 1 : COLUMN_COUNT;
 }

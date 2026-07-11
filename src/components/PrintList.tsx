@@ -1,6 +1,6 @@
 import { Game } from "@/lib/games";
 import { formatRange } from "@/lib/format";
-import { columnCountFor, layoutColumns, PrintDensity } from "@/lib/print";
+import { columnCountFor, PrintDensity } from "@/lib/print";
 import config from "@/lib/config";
 import styles from "./PrintList.module.css";
 
@@ -34,7 +34,6 @@ function formatNote(game: Game): string {
 export function PrintList({ games, summary, label, density }: Props) {
   const rich = density === "rich";
   const compact = density === "compact";
-  const columns = layoutColumns(games, columnCountFor(density));
   const sheetClass = [
     styles.sheet,
     compact && styles.compact,
@@ -54,68 +53,57 @@ export function PrintList({ games, summary, label, density }: Props) {
           {games.length} {games.length > 1 ? "jeux" : "jeu"}
         </p>
       </header>
-      <div className={styles.columns}>
-        {columns.map((column, index) => (
-          <table key={index} className={styles.column}>
-            <thead>
-              <tr>
-                <th className={styles.thName}>Titre</th>
-                <th className={styles.thNum}>Nb J.</th>
-                <th className={styles.thNum}>Duree</th>
-                {rich && <th className={styles.thNum}>Age</th>}
-                {rich && <th className={styles.thNum}>Note</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {column.games.map((game) => (
-                <tr key={game.rowIndex}>
-                  <td className={styles.name}>
-                    <span className={styles.nameRow}>
-                      {rich && (
-                        <span
-                          className={styles.thumb}
-                          style={
-                            game.image
-                              ? { backgroundImage: `url("${game.image}")` }
-                              : undefined
-                          }
-                        />
-                      )}
-                      <span>
-                        {game.titre}
-                        {game.sousTitre && (
-                          <span className={styles.sub}>
-                            {" "}
-                            - {game.sousTitre}
-                          </span>
-                        )}
-                        {rich && metaTags(game) && (
-                          <span className={styles.tags}>{metaTags(game)}</span>
-                        )}
-                        {rich && metaCredits(game) && (
-                          <span className={styles.credits}>
-                            {metaCredits(game)}
-                          </span>
-                        )}
-                      </span>
-                    </span>
-                  </td>
-                  <td className={styles.num}>
-                    {formatRange(game.joueursMin, game.joueursMax)}
-                  </td>
-                  <td className={styles.num}>
-                    {formatRange(game.dureeMin, game.dureeMax)}
-                  </td>
-                  {rich && (
-                    <td className={styles.num}>
-                      {game.age !== null ? `${game.age}+` : "-"}
-                    </td>
-                  )}
-                  {rich && <td className={styles.num}>{formatNote(game)}</td>}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div
+        className={styles.columns}
+        style={{ columnCount: columnCountFor(density) }}
+      >
+        <div className={`${styles.entry} ${styles.head}`}>
+          <span className={styles.thName}>Titre</span>
+          <span className={styles.thNum}>Nb J.</span>
+          <span className={styles.thNum}>Duree</span>
+          {rich && <span className={styles.thNum}>Age</span>}
+          {rich && <span className={styles.thNum}>Note</span>}
+        </div>
+        {games.map((game) => (
+          <div key={game.rowIndex} className={styles.entry}>
+            <span className={styles.name}>
+              {rich &&
+                (game.image ? (
+                  <img
+                    className={styles.thumb}
+                    src={game.image}
+                    alt=""
+                    data-print-image
+                  />
+                ) : (
+                  <span className={styles.thumb} />
+                ))}
+              <span>
+                {game.titre}
+                {game.sousTitre && (
+                  <span className={styles.sub}> - {game.sousTitre}</span>
+                )}
+                {rich && metaTags(game) && (
+                  <span className={styles.tags}>{metaTags(game)}</span>
+                )}
+                {rich && metaCredits(game) && (
+                  <span className={styles.credits}>{metaCredits(game)}</span>
+                )}
+              </span>
+            </span>
+            <span className={styles.num}>
+              {formatRange(game.joueursMin, game.joueursMax)}
+            </span>
+            <span className={styles.num}>
+              {formatRange(game.dureeMin, game.dureeMax)}
+            </span>
+            {rich && (
+              <span className={styles.num}>
+                {game.age !== null ? `${game.age}+` : "-"}
+              </span>
+            )}
+            {rich && <span className={styles.num}>{formatNote(game)}</span>}
+          </div>
         ))}
       </div>
     </div>

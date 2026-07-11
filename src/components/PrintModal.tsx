@@ -5,7 +5,6 @@ import { Game } from "@/lib/games";
 import {
   buildPrintSections,
   columnCountFor,
-  layoutColumns,
   PrintConfig,
   PrintDensity,
   SoloFilter,
@@ -173,9 +172,9 @@ export function PrintModal({ games, summary, onClose, onPrint }: Props) {
       sections.map((section) => ({
         label: section.label,
         count: section.games.length,
-        columns: layoutColumns(section.games, columnCountFor(density)),
+        games: section.games,
       })),
-    [sections, density],
+    [sections],
   );
 
   const print = () => {
@@ -323,26 +322,24 @@ export function PrintModal({ games, summary, onClose, onPrint }: Props) {
                       className={`${styles.pageColumns} ${
                         compact ? styles.pageColumnsCompact : ""
                       }`}
+                      style={{ columnCount: columnCountFor(density) }}
                     >
-                      {preview.columns.map((column, colIndex) => (
-                        <div key={colIndex} className={styles.pageColumn}>
-                          {column.games
-                            .slice(
-                              0,
-                              compact ? PREVIEW_MAX_ROWS * 2 : PREVIEW_MAX_ROWS,
-                            )
-                            .map((game) => (
-                              <span key={game.rowIndex} className={styles.row}>
-                                {rich && <span className={styles.rowThumb} />}
-                                <span className={styles.rowLines}>
-                                  <span className={styles.rowMain} />
-                                  {rich && <span className={styles.rowSub} />}
-                                  {rich && <span className={styles.rowSub} />}
-                                </span>
-                              </span>
-                            ))}
-                        </div>
-                      ))}
+                      {preview.games
+                        .slice(
+                          0,
+                          (compact ? PREVIEW_MAX_ROWS * 2 : PREVIEW_MAX_ROWS) *
+                            columnCountFor(density),
+                        )
+                        .map((game) => (
+                          <span key={game.rowIndex} className={styles.row}>
+                            {rich && <span className={styles.rowThumb} />}
+                            <span className={styles.rowLines}>
+                              <span className={styles.rowMain} />
+                              {rich && <span className={styles.rowSub} />}
+                              {rich && <span className={styles.rowSub} />}
+                            </span>
+                          </span>
+                        ))}
                     </div>
                     <figcaption className={styles.pageCaption}>
                       {preview.label ? `${preview.label} · ` : ""}
