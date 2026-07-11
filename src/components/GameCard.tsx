@@ -26,6 +26,9 @@ export function GameCard({ game, onEdit, detailed }: Props) {
     .join(" · ");
 
   const details: { label: string; value: string }[] = [];
+  if (game.complexite !== null) {
+    details.push({ label: "Complexite", value: `${game.complexite}/5` });
+  }
   if (game.edition !== null) {
     details.push({ label: "Edition", value: String(game.edition) });
   }

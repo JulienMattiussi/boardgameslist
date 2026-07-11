@@ -28,6 +28,7 @@ function makeGame(overrides: Partial<Game>): Game {
     auteurs: [],
     notePerso: null,
     noteMoyenne: null,
+    complexite: null,
     dateAcquisition: "",
     emplacement: "",
     image: "",
@@ -227,5 +228,20 @@ test("sortGames reverses order when direction is flipped from the natural one", 
     "Zeus",
     "Milieu",
     "Alpha",
+  ]);
+});
+
+test("sortGames orders by complexity, heaviest first by default", () => {
+  const games = [
+    makeGame({ titre: "Light", complexite: 1.5 }),
+    makeGame({ titre: "Heavy", complexite: 4.2 }),
+    makeGame({ titre: "Unrated", complexite: null }),
+    makeGame({ titre: "Medium", complexite: 2.8 }),
+  ];
+  expect(sortGames(games, "complexite").map((g) => g.titre)).toEqual([
+    "Heavy",
+    "Medium",
+    "Light",
+    "Unrated",
   ]);
 });

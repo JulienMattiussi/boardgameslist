@@ -69,6 +69,9 @@ function enrichFields(fields: Record<string, unknown>, bgg: BggGame): void {
   if (fields.noteMoyenne === undefined || fields.noteMoyenne === null) {
     fields.noteMoyenne = bgg.noteMoyenne;
   }
+  if (fields.complexite === undefined || fields.complexite === null) {
+    fields.complexite = bgg.complexite;
+  }
 }
 
 async function runPool<T>(

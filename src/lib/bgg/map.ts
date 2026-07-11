@@ -13,6 +13,7 @@ export type BggGame = {
   auteurs: string[];
   editeur: string[];
   noteMoyenne: number | null;
+  complexite: number | null;
   image: string;
   description: string;
 };
@@ -227,6 +228,13 @@ export function parseRating(json: unknown): number | null {
   return average === null ? null : Math.round(average * 10) / 10;
 }
 
+export function parseComplexite(json: unknown): number | null {
+  const item = (json as JsonNode)?.item as JsonNode | undefined;
+  const stats = item?.stats as JsonNode | undefined;
+  const weight = num(stats?.avgweight);
+  return weight === null || weight === 0 ? null : Math.round(weight * 10) / 10;
+}
+
 export function parseGeekItem(json: unknown): BggGame | null {
   const item = (json as JsonNode)?.item as JsonNode | undefined;
   if (!item || item.objectid === undefined || item.objectid === null) {
@@ -251,6 +259,7 @@ export function parseGeekItem(json: unknown): BggGame | null {
     auteurs: linkNames(links, "boardgamedesigner"),
     editeur: linkNames(links, "boardgamepublisher", MAX_PUBLISHERS),
     noteMoyenne: null,
+    complexite: null,
     image: str(item.imageurl),
     description: cleanDescription(str(item.description)),
   };

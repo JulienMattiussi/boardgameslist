@@ -1,4 +1,4 @@
-import { parseGeekItem, parseRating, BggGame } from "./map";
+import { parseGeekItem, parseRating, parseComplexite, BggGame } from "./map";
 
 const BASE = "https://api.geekdo.com/api";
 const TIMEOUT_MS = 15000;
@@ -27,6 +27,7 @@ export async function getGameById(id: string): Promise<BggGame | null> {
   const game = parseGeekItem(item);
   if (game) {
     game.noteMoyenne = parseRating(dynamic);
+    game.complexite = parseComplexite(dynamic);
   }
   return game;
 }

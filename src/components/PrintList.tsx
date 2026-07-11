@@ -31,6 +31,10 @@ function formatNote(game: Game): string {
   return "-";
 }
 
+function formatComplexite(game: Game): string {
+  return game.complexite !== null ? `${game.complexite}/5` : "-";
+}
+
 export function PrintList({ games, summary, label, density }: Props) {
   const rich = density === "rich";
   const compact = density === "compact";
@@ -63,6 +67,7 @@ export function PrintList({ games, summary, label, density }: Props) {
           <span className={styles.thNum}>Duree</span>
           {rich && <span className={styles.thNum}>Age</span>}
           {rich && <span className={styles.thNum}>Note</span>}
+          {rich && <span className={styles.thNum}>Compl.</span>}
         </div>
         {games.map((game) => (
           <div key={game.rowIndex} className={styles.entry}>
@@ -103,6 +108,9 @@ export function PrintList({ games, summary, label, density }: Props) {
               </span>
             )}
             {rich && <span className={styles.num}>{formatNote(game)}</span>}
+            {rich && (
+              <span className={styles.num}>{formatComplexite(game)}</span>
+            )}
           </div>
         ))}
       </div>

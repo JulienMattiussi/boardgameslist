@@ -25,6 +25,7 @@ function makeGame(overrides: Partial<Game>): Game {
     auteurs: [],
     notePerso: null,
     noteMoyenne: null,
+    complexite: null,
     dateAcquisition: "",
     emplacement: "",
     image: "",

@@ -18,6 +18,7 @@ export type Game = {
   auteurs: string[];
   notePerso: number | null;
   noteMoyenne: number | null;
+  complexite: number | null;
   dateAcquisition: string;
   emplacement: string;
   image: string;
@@ -61,6 +62,7 @@ const COLUMNS: ColumnSpec[] = [
   { header: "source", key: "source", kind: "string" },
   { header: "description", key: "description", kind: "string" },
   { header: "bgg_id", key: "bggId", kind: "string" },
+  { header: "complexite", key: "complexite", kind: "number" },
 ];
 
 function parseNumber(raw: string): number | null {

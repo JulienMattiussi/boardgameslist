@@ -1,7 +1,13 @@
 import { Game } from "./games";
 
 export type SortKey =
-  "titre" | "notePerso" | "noteMoyenne" | "duree" | "age" | "dateAcquisition";
+  | "titre"
+  | "notePerso"
+  | "noteMoyenne"
+  | "complexite"
+  | "duree"
+  | "age"
+  | "dateAcquisition";
 
 export type SortDirection = "asc" | "desc";
 
@@ -9,6 +15,7 @@ export const NATURAL_SORT_DIRECTION: Record<SortKey, SortDirection> = {
   titre: "asc",
   notePerso: "desc",
   noteMoyenne: "desc",
+  complexite: "desc",
   duree: "asc",
   age: "asc",
   dateAcquisition: "desc",
@@ -105,6 +112,7 @@ const SORT_COMPARATORS: Record<SortKey, (a: Game, b: Game) => number> = {
   titre: (a, b) => a.titre.localeCompare(b.titre, "fr"),
   notePerso: (a, b) => (a.notePerso ?? -1) - (b.notePerso ?? -1),
   noteMoyenne: (a, b) => (a.noteMoyenne ?? -1) - (b.noteMoyenne ?? -1),
+  complexite: (a, b) => (a.complexite ?? -1) - (b.complexite ?? -1),
   duree: (a, b) =>
     (a.dureeMax ?? a.dureeMin ?? Number.POSITIVE_INFINITY) -
     (b.dureeMax ?? b.dureeMin ?? Number.POSITIVE_INFINITY),

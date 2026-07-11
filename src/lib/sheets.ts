@@ -3,7 +3,7 @@ import { google } from "googleapis";
 const READWRITE_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 const SHEET_NAME = "Jeux";
 const SHEET_ID = 0;
-const LAST_COLUMN = "W";
+const LAST_COLUMN = "X";
 
 type CellValue = string | number;
 

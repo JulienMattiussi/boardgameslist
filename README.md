@@ -24,9 +24,10 @@ route serveur avec un compte de service.
 
 - 🔎 **Catalogue filtrable** : recherche plein texte, nombre de joueurs, durée,
   type (société / énigme-enquête), et tris (titre, note perso, note moyenne,
-  durée, âge, date d'acquisition) avec choix du sens (croissant / décroissant).
+  complexité, durée, âge, date d'acquisition) avec choix du sens (croissant /
+  décroissant).
 - 🃏 **Vignettes riches** : note perso + note moyenne, et un mode "plus d'infos"
-  (thèmes, mécanismes, édition, emplacement...).
+  (complexité BGG, thèmes, mécanismes, édition, emplacement...).
 - 🖨️ **Impression paramétrable** : une modale d'options (aperçu schématique
   inclus) avec une densité au choix (riche = image + catégories + thèmes,
   normale, ou compacte pour plus de jeux par page), des découpages cumulables
@@ -38,8 +39,8 @@ route serveur avec un compte de service.
 - ✏️ **Édition en ligne** (éditeurs connectés) : ajout, modification, suppression
   via une modale, avec autocomplétion des catégories / thèmes / mécanismes /
   éditeurs, et un bouton **Récupérer depuis BGG** (BoardGameGeek) qui préremplit
-  les champs vides (image, catégories, mécaniques, auteurs...) à partir de l'URL
-  ou de l'id BGG collé.
+  les champs vides (image, catégories, mécaniques, auteurs, complexité...) à
+  partir de l'URL ou de l'id BGG collé.
 - 📥 **Import de collection** : un seul champ fichier, le format est détecté
   automatiquement (export **Myludo** CSV/JSON/XLSX ou collection **BoardGameGeek**
   CSV). Dédoublonnage en cascade (`myludo_id` / `bgg_id` / `ean` / titre), relecture

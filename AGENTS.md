@@ -23,13 +23,15 @@ bottom and paginates naturally, no server-side column splitting; pure logic in
 modal), and Myludo import (CSV/JSON/XLSX -> dedup cascade -> step-by-step review
 modal). The legacy MDX blog + Netlify CMS have been removed.
 
-BGG (BoardGameGeek) integration: a `bgg_id` sheet column (W), pure JSON mappers in
+BGG (BoardGameGeek) integration: a `bgg_id` sheet column (W) and a `complexite`
+column (X, the BGG "Weight" 1-5), pure JSON mappers in
 `src/lib/bgg/`, a "Recuperer depuis BGG" panel in `GameFormModal` (prefill from a
 pasted url/id), and a **BGG collection CSV import** merged into the transparent
 import flow (`src/lib/import.ts` auto-detects Myludo vs BGG; unified dedup cascade
 `myludo_id -> bgg_id -> ean -> titre`). The official XML APIs (v1 & v2) are
 Cloudflare-blocked (401); data uses BGG's internal JSON
-(`api.geekdo.com/api/geekitems` + `/dynamicinfo` for the rating) via the server
+(`api.geekdo.com/api/geekitems` + `/dynamicinfo` for the rating and the
+complexity/weight) via the server
 route `/api/bgg/thing`, **by id only** (name search is blocked too). See
 [docs/reference.md](docs/reference.md) sections 4 and 4b before touching it.
 

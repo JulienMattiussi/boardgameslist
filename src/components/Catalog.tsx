@@ -48,6 +48,7 @@ const SORT_LABELS: Record<SortKey, string> = {
   titre: "Titre",
   notePerso: "Note perso",
   noteMoyenne: "Note moyenne",
+  complexite: "Complexite",
   duree: "Duree",
   age: "Age",
   dateAcquisition: "Date d'acquisition",

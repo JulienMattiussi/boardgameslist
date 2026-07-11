@@ -34,17 +34,24 @@ donnees, regles d'import), voir [plan-migration.md](plan-migration.md).
 
 ## 3. Colonnes du Sheet et typage
 
-Ordre des colonnes A -> W (cle machine snake_case) :
+Ordre des colonnes A -> X (cle machine snake_case) :
 
 `myludo_id`, `ean`, `titre`, `sous_titre`, `edition`, `joueurs_min`,
 `joueurs_max`, `duree_min`, `duree_max`, `age`, `categories`, `themes`,
 `mecanismes`, `editeur`, `auteurs`, `note_perso`, `note_moyenne`,
-`date_acquisition`, `emplacement`, `image`, `source`, `description`, `bgg_id`.
+`date_acquisition`, `emplacement`, `image`, `source`, `description`, `bgg_id`,
+`complexite`.
 
 - **`bgg_id` (colonne W)** : l'en-tete `BGG_ID` doit exister dans la ligne 1 de
   l'onglet Jeux. Le mapping lecture se fait par nom d'en-tete : sans cet en-tete,
   l'id BGG est ecrit en colonne W mais **jamais relu** (donc non persistant).
-  `LAST_COLUMN` dans `sheets.ts` doit rester aligne (`W`).
+  `LAST_COLUMN` dans `sheets.ts` doit rester aligne (`X`).
+- **`complexite` (colonne X)** : note de complexite BGG (le "Weight", 1.0 a 5.0),
+  lue depuis `dynamicinfo` (`stats.avgweight`) dans le meme appel que la note
+  moyenne. L'en-tete `COMPLEXITE` doit exister en X1, sinon la valeur est ecrite
+  mais jamais relue (comme `bgg_id`). Uniquement alimentee par BGG (import,
+  bouton "Recuperer depuis BGG", re-sync) ; affichee dans la fiche "Plus d'infos",
+  l'impression riche et triable dans le catalogue.
 
 - **Ligne d'en-tete EN MAJUSCULES** (`MYLUDO_ID`, `TITRE`, ...) ; le code passe
   l'en-tete en minuscules pour retrouver la cle. **Exception** : la colonne `ean`

@@ -2,6 +2,7 @@ import { test, expect } from "vitest";
 import {
   parseGeekItem,
   parseRating,
+  parseComplexite,
   parseBggId,
   cleanDescription,
   mapCategories,
@@ -106,6 +107,15 @@ test("parseRating reads and rounds the average from dynamicinfo", () => {
   expect(parseRating({ item: { stats: { average: "0" } } })).toBeNull();
   expect(parseRating(null)).toBeNull();
   expect(parseRating({ item: {} })).toBeNull();
+});
+
+test("parseComplexite reads and rounds the average weight from dynamicinfo", () => {
+  expect(parseComplexite({ item: { stats: { avgweight: "2.2813" } } })).toBe(
+    2.3,
+  );
+  expect(parseComplexite({ item: { stats: { avgweight: "0" } } })).toBeNull();
+  expect(parseComplexite(null)).toBeNull();
+  expect(parseComplexite({ item: {} })).toBeNull();
 });
 
 test("mapCategories maps known BGG categories to French and drops the rest", () => {

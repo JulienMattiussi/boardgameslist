@@ -38,6 +38,7 @@ function makeGame(overrides: Partial<Game>): Game {
     auteurs: [],
     notePerso: null,
     noteMoyenne: null,
+    complexite: null,
     dateAcquisition: "",
     emplacement: "",
     image: "",
@@ -87,6 +88,7 @@ const bggGame = {
   auteurs: ["Klaus Teuber"],
   editeur: ["KOSMOS"],
   noteMoyenne: 7.1,
+  complexite: 2.3,
   image: "https://img/catan.jpg",
   description: "Trade.",
 };
@@ -138,6 +140,7 @@ test("import enriches new games via BGG before applying", async () => {
   expect(fields.categories).toEqual(["Jeu de Cartes"]);
   expect(fields.mecanismes).toEqual(["Jet De Dés"]);
   expect(fields.image).toBe("https://img/catan.jpg");
+  expect(fields.complexite).toBe(2.3);
 });
 
 test("bulk 'garder l'import' resolves every match and merges on apply", async () => {

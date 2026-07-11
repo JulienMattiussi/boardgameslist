@@ -29,6 +29,7 @@ function makeGame(overrides: Partial<Game>): Game {
     auteurs: [],
     notePerso: null,
     noteMoyenne: null,
+    complexite: null,
     dateAcquisition: "",
     emplacement: "",
     image: "",
@@ -60,6 +61,7 @@ const CATAN_GAME = {
   auteurs: ["Klaus Teuber"],
   editeur: ["KOSMOS"],
   noteMoyenne: null,
+  complexite: 2.3,
   image: "https://img/catan.jpg",
   description: "Trade and build.",
 };
@@ -91,6 +93,7 @@ test("BGG fetch by id fills the empty form fields", async () => {
   expect(fetch).toHaveBeenCalledWith("/api/bgg/thing?id=13");
   expect(screen.getByDisplayValue("Catan")).toBeTruthy();
   expect(screen.getByDisplayValue("Klaus Teuber")).toBeTruthy();
+  expect(screen.getByDisplayValue("2.3")).toBeTruthy();
 });
 
 test("BGG fetch overwrites title and metadata of a manual game but keeps description", async () => {

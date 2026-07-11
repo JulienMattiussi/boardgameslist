@@ -75,6 +75,7 @@ const EMPTY_FORM: FormState = {
   auteurs: "",
   notePerso: "",
   noteMoyenne: "",
+  complexite: "",
   dateAcquisition: "",
   emplacement: "",
   image: "",
@@ -110,6 +111,7 @@ function gameToForm(game: Game | null): FormState {
     auteurs: game.auteurs.join("; "),
     notePerso: num(game.notePerso),
     noteMoyenne: num(game.noteMoyenne),
+    complexite: num(game.complexite),
     dateAcquisition: game.dateAcquisition,
     emplacement: game.emplacement,
     image: game.image,
@@ -177,6 +179,7 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
         auteurs: put("auteurs", bgg.auteurs.join("; ")),
         editeur: put("editeur", bgg.editeur.join("; ")),
         noteMoyenne: put("noteMoyenne", num(bgg.noteMoyenne)),
+        complexite: put("complexite", num(bgg.complexite)),
         image: put("image", bgg.image),
       };
     });
@@ -423,6 +426,15 @@ export function GameFormModal({ game, onClose, onSaved }: Props) {
                 readOnly
               />
             </div>
+          </Field>
+
+          <Field label="Complexite BGG (sur 5)" Icon={StarIcon}>
+            <input
+              className={`${controls.input} ${controls.readonly}`}
+              type="number"
+              value={form.complexite}
+              readOnly
+            />
           </Field>
 
           <Field label="Categories" Icon={LayersIcon} hint="separees par ;">
